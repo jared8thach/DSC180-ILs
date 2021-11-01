@@ -1,0 +1,11 @@
+﻿  xlsdk_input_includes.c
+  kalman.c
+  mouse_input.c
+     Creating library C:\Users\jared\Downloads\FA21_SP22\FA21\DSC180A\mouse_input\x64\Release\mouse_input.lib and object C:\Users\jared\Downloads\FA21_SP22\FA21\DSC180A\mouse_input\x64\Release\mouse_input.exp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 41 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  mouse_input.vcxproj -> C:\Users\jared\Downloads\FA21_SP22\FA21\DSC180A\mouse_input\x64\Release\mouse_input.dll
+  Copying library to run directory.
+          1 file(s) copied.

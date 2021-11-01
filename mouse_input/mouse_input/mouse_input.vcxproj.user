@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommand>$(XLSDK_RUN)</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>"--start" "--time_in_ms" "--pause" "1000" "--library" "$(XLSDK_BINS)\intel_modeler.dll" "--no_pl" "--kernel_priority_boost" "--device_options" "time=yes generate_key_file=yes performance=no output=test format_output=yes output_folder='$(XLSDK_OUTPUTS)' output_buffer=1024 il='$(XLSDK_BINS)\$(TargetFileName)'"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>$(XLSDK_RUN)</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>"--start" "--time_in_ms" "--pause" "1000" "--library" "$(XLSDK_BINS)\intel_modeler.dll" "--no_pl" "--kernel_priority_boost" "--device_options" "time=yes generate_key_file=yes performance=no output=test format_output=yes output_folder='$(XLSDK_OUTPUTS)' output_buffer=1024 il='$(XLSDK_BINS)\$(TargetFileName)'"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommand>$(XLSDK_RUN)</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>"--start" "--time_in_ms" "--pause" "20" "--library" "$(XLSDK_BINS)\intel_modeler.dll" "--no_pl" "--kernel_priority_boost" "--device_options" "time=yes generate_key_file=yes performance=no output=test format_output=yes output_folder='$(XLSDK_OUTPUTS)' output_buffer=1024 il='$(XLSDK_BINS)\$(TargetFileName)','q=0.25' $(XLSDK_RUN_OUTPUT_OPTIONS)“</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommand>$(XLSDK_RUN)</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>"--start" "--time_in_ms" "--pause" "20" "--library" "$(XLSDK_BINS)\intel_modeler.dll" "--no_pl" "--kernel_priority_boost" "--device_options" "time=yes generate_key_file=yes performance=no output=test format_output=yes output_folder='$(XLSDK_OUTPUTS)' output_buffer=1024 il='$(XLSDK_BINS)\$(TargetFileName)','q=0.25' $(XLSDK_RUN_OUTPUT_OPTIONS)“</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>

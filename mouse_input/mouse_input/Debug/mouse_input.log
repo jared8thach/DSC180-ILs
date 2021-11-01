@@ -1,0 +1,5 @@
+﻿  xlsdk_input_includes.c
+  kalman.c
+  mouse_input.c
+  Generating Code...
+LINK : fatal error LNK1104: cannot open file 'C:\_xlsdk\libs\Debug\32\xlsdk_input.lib'
