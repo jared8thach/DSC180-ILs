@@ -41,12 +41,15 @@ extern "C" {
 #define INPUT_PAUSE_IN_S 10
 #define INPUT_EVENT_INCREMENT 100
 
-#define INPUTS_COUNT 1
-#define INPUT_INDEX 0
+#define INPUTS_COUNT 2
+#define INPUT_FG_INDEX 0
+#define INPUT_THREAD_ID_INDEX 1
 #define INPUT_NAME_STRING "FG"
 #define INPUT_DESCRIPTION_STRINGS \
-	"Foreground window"
+	"Foreground window.", \
+	"Window thread process ID."
 #define INPUT_TYPES \
+	ULL_COUNTER, \
 	ULL_COUNTER
 
 //-----------------------------------------------------------------------------

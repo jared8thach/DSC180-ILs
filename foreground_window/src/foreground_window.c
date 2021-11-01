@@ -31,7 +31,7 @@
 //-----------------------------------------------------------------------------
 static unsigned long long counter = 0;
 HWND window;
-DWORD thread;
+DWORD thread_id;
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -110,11 +110,11 @@ ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 	SET_INPUTS_NAME(INPUT_NAME_STRING);
 	for( i = 0; i < INPUTS_COUNT; i++) {
 		SET_INPUT_DESCRIPTION(
-			INPUT_INDEX, 
+			i, 
 			descriptions[i]
 		);
 		SET_INPUT_TYPE(
-			INPUT_INDEX,
+			i,
 			types[i]
 		);
 	} // for i (each input)
@@ -178,12 +178,19 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 	//-------------------------------------------------------------------------
 	counter++;
 
+	window = GetForegroundWindow();
+	thread_id = GetWindowThreadProcessId(window, NULL);
+
 	//-------------------------------------------------------------------------
 	// Set input values.
 	//-------------------------------------------------------------------------
 	SET_INPUT_ULL_VALUE(
-		INPUT_INDEX,
-		counter
+		INPUT_FG_INDEX,
+		window
+	);
+	SET_INPUT_ULL_VALUE(
+		INPUT_THREAD_ID_INDEX,
+		thread_id
 	);
 
 	return(ESRV_SUCCESS);
@@ -243,18 +250,18 @@ ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 				goto modeler_listen_inputs_exit; // error condition
 		} // switch
 
-		//---------------------------------------------------------------------
-		// Generate incrementing input.
-		//---------------------------------------------------------------------
-		counter += INPUT_EVENT_INCREMENT;
+		////---------------------------------------------------------------------
+		//// Generate incrementing input.
+		////---------------------------------------------------------------------
+		//counter += INPUT_EVENT_INCREMENT;
 
-		//---------------------------------------------------------------------
-		// Set input values.
-		//---------------------------------------------------------------------
-		SET_INPUT_ULL_VALUE(
-			INPUT_INDEX,
-			counter
-		);
+		////---------------------------------------------------------------------
+		//// Set input values.
+		////---------------------------------------------------------------------
+		//SET_INPUT_ULL_VALUE(
+		//	INPUT_FG_INDEX,
+		//	999
+		//);
 
 		//---------------------------------------------------------------------
 		// Trigger asynchronous logging.

@@ -1,4 +1,5 @@
 ﻿  foreground_window.c
+C:\Users\jared\Downloads\FA21_SP22\FA21\DSC180A\foreground_window\src\foreground_window.c(190,1): warning C4047: '=': 'unsigned __int64' differs in levels of indirection from 'HWND'
   xlsdk_input_includes.c
      Creating library C:\Users\jared\Downloads\FA21_SP22\FA21\DSC180A\foreground_window\x64\Release\foreground_window.lib and object C:\Users\jared\Downloads\FA21_SP22\FA21\DSC180A\foreground_window\x64\Release\foreground_window.exp
   Generating code
