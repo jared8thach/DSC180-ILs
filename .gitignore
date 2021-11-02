@@ -1,52 +1,17 @@
-# Prerequisites
-*.d
+*/
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+!.gitignore
 
-# Linker output
-*.ilk
-*.map
-*.exp
+!foreground_window/
+foreground_window/*
+!foreground_window/src/
 
-# Precompiled Headers
-*.gch
-*.pch
+!user_waiting/
+user_waiting/*
+!user_waiting/src/
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+!mouse_input/
+mouse_input/*
+!mouse_input/src/
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+!other_txt/
