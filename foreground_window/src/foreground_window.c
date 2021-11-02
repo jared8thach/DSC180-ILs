@@ -25,13 +25,23 @@
 #include <assert.h>
 #include "foreground_window.h"
 #include <Windows.h>
+#include <Psapi.h>
+#include <string.h>
 
 //-----------------------------------------------------------------------------
-// Global counter variable.
+// Global variables.
 //-----------------------------------------------------------------------------
-static unsigned long long counter = 0;
-HWND window;
-DWORD thread_id;
+HWND h_window = NULL; // window handle
+DWORD thread_id = 0; // thread id
+DWORD process_id = 0; // process id
+HANDLE h_process = NULL; // process handle
+LPWSTR process_path[MAX_PATH] = { '\0' }; // process path
+char* ptr = NULL; // used for string splitting
+
+// consider using these function pointers
+//BOOL(__stdcall* p_is_immersive_process)(HANDLE) = NULL;
+//LONG(__stdcall* p_get_package_full_name)(HANDLE, UINT32*, PWSTR) = NULL;
+
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -173,24 +183,48 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
 	assert(p != NULL);
 
-	//-------------------------------------------------------------------------
-	// Generate incrementing input.
-	//-------------------------------------------------------------------------
-	counter++;
+	// getting window handle
+	h_window = GetForegroundWindow();
+	if (h_window != NULL) {
+		// proceed
+	}
 
-	window = GetForegroundWindow();
-	thread_id = GetWindowThreadProcessId(window, NULL);
+	// getting thread id and process_id
+	// set thread_id = 
+	thread_id = GetWindowThreadProcessId(h_window, &process_id);
+
+	// allowing access and getting process handle
+	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
+	// getting path to process if openProc is not null
+	if (h_process != NULL) {
+		GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+		// sometimes gets Memory Dump (.dmp) file when changing LPWSTR p_process[MAX_PATH] > LPWSTR p_process???
+
+		// (attempting) to get last backslash which contains the .exe
+		ptr = strrchr(process_path, '\\');
+	}
+	//// add if statement
+	//ptr = strrchr(process_path, '\\');
 
 	//-------------------------------------------------------------------------
 	// Set input values.
 	//-------------------------------------------------------------------------
 	SET_INPUT_ULL_VALUE(
 		INPUT_FG_INDEX,
-		window
+		h_window
 	);
 	SET_INPUT_ULL_VALUE(
 		INPUT_THREAD_ID_INDEX,
 		thread_id
+	);
+	SET_INPUT_ULL_VALUE(
+		INPUT_PROCESS_ID_INDEX,
+		process_id
+	);
+	SET_INPUT_UNICODE_STRING_ADDRESS(
+		INPUT_PROCESS_PATH_INDEX,
+		ptr
 	);
 
 	return(ESRV_SUCCESS);
@@ -207,7 +241,7 @@ Function: modeler_listen_inputs
 Purpose : listen for all inputs.
 In      : pointer to PINTEL_MODELER_INPUT_TABLE data structure.
 Out     : modified PINTEL_MODELER_INPUT_TABLE data structure.
-Return  : status.
+Return  : status. 
 -----------------------------------------------------------------------------*/
 ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
@@ -249,19 +283,6 @@ ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 			default:
 				goto modeler_listen_inputs_exit; // error condition
 		} // switch
-
-		////---------------------------------------------------------------------
-		//// Generate incrementing input.
-		////---------------------------------------------------------------------
-		//counter += INPUT_EVENT_INCREMENT;
-
-		////---------------------------------------------------------------------
-		//// Set input values.
-		////---------------------------------------------------------------------
-		//SET_INPUT_ULL_VALUE(
-		//	INPUT_FG_INDEX,
-		//	999
-		//);
 
 		//---------------------------------------------------------------------
 		// Trigger asynchronous logging.

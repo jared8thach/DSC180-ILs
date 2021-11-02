@@ -41,16 +41,22 @@ extern "C" {
 #define INPUT_PAUSE_IN_S 10
 #define INPUT_EVENT_INCREMENT 100
 
-#define INPUTS_COUNT 2
+#define INPUTS_COUNT 4
 #define INPUT_FG_INDEX 0
 #define INPUT_THREAD_ID_INDEX 1
+#define INPUT_PROCESS_ID_INDEX 2
+#define INPUT_PROCESS_PATH_INDEX 3
 #define INPUT_NAME_STRING "FG"
 #define INPUT_DESCRIPTION_STRINGS \
 	"Foreground window.", \
-	"Window thread process ID."
+	"Window thread ID.", \
+	"Window process ID.", \
+	"Function handle."
 #define INPUT_TYPES \
 	ULL_COUNTER, \
-	ULL_COUNTER
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	STRING_COUNTER
 
 //-----------------------------------------------------------------------------
 // Function prototypes.
