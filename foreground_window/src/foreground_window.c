@@ -35,8 +35,7 @@ HWND h_window = NULL; // window handle
 DWORD thread_id = 0; // thread id
 DWORD process_id = 0; // process id
 HANDLE h_process = NULL; // process handle
-LPWSTR process_path[MAX_PATH] = { '\0' }; // process path
-char* ptr = NULL; // used for string splitting
+TCHAR process_path[MAX_PATH] = { '\0' }; // process path
 
 // consider using these function pointers
 //BOOL(__stdcall* p_is_immersive_process)(HANDLE) = NULL;
@@ -183,49 +182,64 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
 	assert(p != NULL);
 
-	// getting window handle
+	// getting foreground window handle
 	h_window = GetForegroundWindow();
 	if (h_window != NULL) {
-		// proceed
+
+		// getting thread id and process_id
+		thread_id = GetWindowThreadProcessId(h_window, &process_id);
+
+		// allowing access and getting process handle
+		h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
+
+		// getting path to process if h_process is not null
+		if (h_process != NULL) {
+			(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+			// intializing tokens to retrieve .exe
+			wchar_t* token = 0;
+			wchar_t* curToken = 0;
+
+			// getting first token
+			token = _tcstok(process_path, L"\\");
+
+			// iterating through all tokens
+			while (token != NULL) {
+
+				curToken = _tcstok(NULL, L"\\");
+
+				// if current token is not null, assign to token as output
+				if (curToken != NULL) {
+					token = curToken;
+				}
+
+				// break if we are at end of file path
+				else {
+					break;
+				}
+			}
+
+			//-------------------------------------------------------------------------
+			// Set input values.
+			//-------------------------------------------------------------------------
+			SET_INPUT_ULL_VALUE(
+				INPUT_FG_INDEX,
+				h_window
+			);
+			SET_INPUT_ULL_VALUE(
+				INPUT_THREAD_ID_INDEX,
+				thread_id
+			);
+			SET_INPUT_ULL_VALUE(
+				INPUT_PROCESS_ID_INDEX,
+				curToken
+			);
+			SET_INPUT_UNICODE_STRING_ADDRESS(
+				INPUT_PROCESS_PATH_INDEX,
+				token
+			);
+		}
 	}
-
-	// getting thread id and process_id
-	// set thread_id = 
-	thread_id = GetWindowThreadProcessId(h_window, &process_id);
-
-	// allowing access and getting process handle
-	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
-	// getting path to process if openProc is not null
-	if (h_process != NULL) {
-		GetProcessImageFileName(h_process, process_path, MAX_PATH);
-
-		// sometimes gets Memory Dump (.dmp) file when changing LPWSTR p_process[MAX_PATH] > LPWSTR p_process???
-
-		// (attempting) to get last backslash which contains the .exe
-		ptr = strrchr(process_path, '\\');
-	}
-	//// add if statement
-	//ptr = strrchr(process_path, '\\');
-
-	//-------------------------------------------------------------------------
-	// Set input values.
-	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		INPUT_FG_INDEX,
-		h_window
-	);
-	SET_INPUT_ULL_VALUE(
-		INPUT_THREAD_ID_INDEX,
-		thread_id
-	);
-	SET_INPUT_ULL_VALUE(
-		INPUT_PROCESS_ID_INDEX,
-		process_id
-	);
-	SET_INPUT_UNICODE_STRING_ADDRESS(
-		INPUT_PROCESS_PATH_INDEX,
-		ptr
-	);
 
 	return(ESRV_SUCCESS);
 
