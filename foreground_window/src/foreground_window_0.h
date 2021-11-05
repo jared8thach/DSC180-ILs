@@ -19,13 +19,15 @@
 *** express and approved by Intel in writing.
 **/
 
-#ifndef __INCLUDE_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
-#define __INCLUDE_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
+#ifndef __INCLUDE_EVENT_DRIVEN_INCREMENTING_INPUT__
+#define __INCLUDE_EVENT_DRIVEN_INCREMENTING_INPUT__
 
 //-----------------------------------------------------------------------------
 // Headers inclusions.
 //-----------------------------------------------------------------------------
-#include <windows.h>
+#ifdef __PL_WINDOWS__
+	#include <windows.h>
+#endif // __PL_WINDOWS__
 #include "pub_intel_modeler.h"
 
 #ifdef __cplusplus
@@ -36,25 +38,25 @@ extern "C" {
 //-----------------------------------------------------------------------------
 // Defines.
 //-----------------------------------------------------------------------------
-#define INPUTS_COUNT 1
-#define INPUT_INDEX 0
-#define INPUT_NAME_STRING "MOUSE-MSG-LOOP"
-#define INPUT_DESCRIPTION_STRINGS \
-	"Mouse clicks as seen in a mouse hook message loop."
-#define INPUT_TYPES \
-	STRING_COUNTER
+#define INPUT_PAUSE_IN_S 10
+#define INPUT_EVENT_INCREMENT 100
 
-//-----------------------------------------------------------------------------
-// Mouse click defines.
-//-----------------------------------------------------------------------------
-#define SLEEP_EVENTS_COUNT \
-	(1)
-#define WAIT_EVENTS_COUNT \
-	(2)
-#define STOP_EVENT_INDEX \
-		(0)
-#define CLICK_EVENT_INDEX \
-		(1)
+#define INPUTS_COUNT 4
+#define INPUT_FG_INDEX 0
+#define INPUT_THREAD_ID_INDEX 1
+#define INPUT_PROCESS_ID_INDEX 2
+#define INPUT_PROCESS_PATH_INDEX 3
+#define INPUT_NAME_STRING "FG"
+#define INPUT_DESCRIPTION_STRINGS \
+	"Foreground window.", \
+	"Window thread ID.", \
+	"Window process ID.", \
+	"Function handle."
+#define INPUT_TYPES \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	STRING_COUNTER
 
 //-----------------------------------------------------------------------------
 // Function prototypes.
@@ -72,13 +74,9 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_process_dctl(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_process_lctl(PINTEL_MODELER_INPUT_TABLE);
-//-----------------------------------------------------------------------------
-unsigned int __stdcall generate_metrics(void *);
-unsigned int __stdcall mouse_messages_loop(void *);
-LRESULT CALLBACK process_mouse_messages(int, WPARAM, LPARAM);
 /*--------------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __INCLUDE_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
+#endif // __INCLUDE_EVENT_DRIVEN_INCREMENTING_INPUT__
