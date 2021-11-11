@@ -30,14 +30,12 @@
 //-----------------------------------------------------------------------------
 // Global counter variable.
 //-----------------------------------------------------------------------------
-char* cursor = "null"; // name of cursor icon to return
-char* prevCursor = "null"; // name of previous cursor icon
-CURSORINFO ci = { 0 }; // cursor info structure
-HCURSOR cursorHandles[15] = { 0 }; // array of cursor icon handles
-char* cursorStrings[15] = { '\0' }; // array cursor icon string names
-DWORD thread_id = 0;
-HANDLE h_thread = NULL;
-
+char* cursor = "null";
+CURSORINFO ci = { 0 };
+HCURSOR cursorHandles[15] = { 0 };
+char* cursorStrings[15] = { '\0' };
+HWND window = 0;
+DWORD thread = 0;
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -142,19 +140,6 @@ ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
 		assert(p != NULL);
 
-	h_thread = (HANDLE)_beginthreadex(
-		NULL,
-		0,
-		custom_event_listener_thread,
-		(void *)p,
-		0,
-		(unsigned int *)&thread_id
-	);
-	if (h_thread == NULL) {
-		goto modeler_open_inputs_error;
-	}
-
-
 	//-------------------------------------------------------------------------
 	// Set input information.
 	//-------------------------------------------------------------------------
@@ -174,10 +159,6 @@ ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 	// Exception handling section end.
 	//-------------------------------------------------------------------------
 	INPUT_END_EXCEPTIONS_HANDLING(p)
-
-modeler_open_inputs_error:
-
-	return (ESRV_FAILURE);
 
 }
 
@@ -234,29 +215,29 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
 	assert(p != NULL);
 
-	////-------------------------------------------------------------------------
-	//// Get cursor icon.
-	////-------------------------------------------------------------------------
-	//ci.cbSize = sizeof(ci);
-	//GetCursorInfo(&ci);
+	//-------------------------------------------------------------------------
+	// Get cursor icon.
+	//-------------------------------------------------------------------------
+	ci.cbSize = sizeof(ci);
+	GetCursorInfo(&ci);
 
-	////-------------------------------------------------------------------------
-	//// Comparing cursor to cursorHandles array.
-	////-------------------------------------------------------------------------
-	//for (int i = 0; i < 15; i = i + 1) {
-	//	if (cursorHandles[i] == ci.hCursor) {
-	//		cursor = cursorStrings[i];
-	//		break;
-	//	}
-	//}
+	//-------------------------------------------------------------------------
+	// Comparing cursor to cursorHandles array.
+	//-------------------------------------------------------------------------
+	for (int i = 0; i < 15; i = i + 1) {
+		if (cursorHandles[i] == ci.hCursor) {
+			cursor = cursorStrings[i];
+			break;
+		}
+	}
 
-	////-------------------------------------------------------------------------
-	//// Set input values.
-	////-------------------------------------------------------------------------
-	//SET_INPUT_STRING_ADDRESS(
-	//	MOUSE_CURSOR_STATE_INDEX,
-	//	cursor
-	//);
+	//-------------------------------------------------------------------------
+	// Set input values.
+	//-------------------------------------------------------------------------
+	SET_INPUT_STRING_ADDRESS(
+		MOUSE_CURSOR_STATE_INDEX,
+		cursor
+	);
 
 	return(ESRV_SUCCESS);
 
@@ -388,133 +369,4 @@ ESRV_STATUS modeler_process_lctl(PINTEL_MODELER_INPUT_TABLE p) {
 	//-------------------------------------------------------------------------
 	INPUT_END_EXCEPTIONS_HANDLING(p)
 
-}
-
-ESRV_API unsigned int __stdcall custom_event_listener_thread(void* px) {
-
-	//-------------------------------------------------------------------------
-	// Generic variables.
-	//-------------------------------------------------------------------------
-	DWORD dwret = 0;
-
-	//-------------------------------------------------------------------------
-	// Watchdog variables.
-	//-------------------------------------------------------------------------
-	WATCHDOG_VARIABLES
-
-	//-------------------------------------------------------------------------
-	// Access helper variables.
-	//-------------------------------------------------------------------------
-	PINTEL_MODELER_INPUT_TABLE p = NULL;
-
-	//-------------------------------------------------------------------------
-
-	//-------------------------------------------------------------------------
-	// Exception handling section begin.
-	//-------------------------------------------------------------------------
-	INPUT_BEGIN_EXCEPTIONS_HANDLING
-
-	assert(px != NULL);
-	p = (PINTEL_MODELER_INPUT_TABLE)px;
-
-	//-------------------------------------------------------------------------
-	// Name this thread (for debug mode only).
-	//-------------------------------------------------------------------------
-	INPUT_DIAGNOSTIC_NAME_THIS_THREAD(
-		p,
-		"custom_event_listener_thread"
-	);
-
-	//-------------------------------------------------------------------------
-	// Register this thread with watchdog.
-	//-------------------------------------------------------------------------
-	INPUT_REGISTER_EVENT_LOCKED_THREAD_WITH_WATCHDOG(
-		p,
-		"custom_event_listener_thread",
-		h_thread,
-		thread_id,
-		STOP_SIGNAL,
-		custom_event_listener_thread_exit
-	);
-
-	while (STOP_REQUEST == 0) {
-		//---------------------------------------------------------------------
-			// Pause to simulate event triggering.
-			// Note:
-			//    Rather than using a sleep, which would lock the event listener 
-			//    thread, we recommend using the method shown below. In general
-			//    developers of event-driven input libraries should add into the
-			//    end condition the event / semaphore via the STOP_SIGNAL macro 
-			//    (also - but not instead - use the STOP_REQUEST macro).
-			//---------------------------------------------------------------------
-		dwret = WaitForSingleObject(
-			STOP_SIGNAL,
-			INPUT_PAUSE_IN_S * 33 // times milliseconds (10 * 0.033 second)
-		);
-		switch (dwret) {
-		case WAIT_OBJECT_0:
-				goto custom_event_listener_thread_exit; // time to leave!
-				break;
-			case WAIT_TIMEOUT:
-				//-------------------------------------------------------------------------
-				// Get cursor icon.
-				//-------------------------------------------------------------------------
-				ci.cbSize = sizeof(ci);
-				GetCursorInfo(&ci);
-
-				//-------------------------------------------------------------------------
-				// Comparing cursor to cursorHandles array.
-				//-------------------------------------------------------------------------
-				for (int i = 0; i < 15; i = i + 1) {
-					if (cursorHandles[i] == ci.hCursor) {
-						cursor = cursorStrings[i];
-						break;
-					}
-				}
-
-				// if cursor icon state did not change, do not log
-				if (prevCursor == cursor) {
-					break;
-				}
-
-				//-------------------------------------------------------------------------
-				// Set input values.
-				//-------------------------------------------------------------------------
-				SET_INPUT_STRING_ADDRESS(
-					MOUSE_CURSOR_STATE_INDEX,
-					cursor
-				);
-
-				// setting previous cursor value equal to current cursor value
-				prevCursor = cursor;
-
-				break; // all good, time to make a measurement
-			default:
-				goto custom_event_listener_thread_exit; // error condition
-		} // switch
-
-		//---------------------------------------------------------------------
-		// Trigger logging.
-		//---------------------------------------------------------------------
-		LOG_INPUT_VALUES;
-	} // while
-
-	//-------------------------------------------------------------------------
-	// Un-register this thread with watchdog.
-	//-------------------------------------------------------------------------
-	INPUT_UNREGISTER_THREAD_WITH_WATCHDOG(
-		p,
-		h_thread,
-		thread_id
-	);
-
-custom_event_listener_thread_exit:
-	return(ESRV_FAILURE);
-
-	return(ESRV_SUCCESS);
-
-	//-------------------------------------------------------------------------
-	// Exception handling section end.
-	//-------------------------------------------------------------------------
-	INPUT_END_EXCEPTIONS_HANDLING(p)
 }

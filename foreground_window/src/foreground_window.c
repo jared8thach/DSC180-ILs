@@ -49,6 +49,7 @@ DWORD thread_id = 0; // thread id
 DWORD process_id = 0; // process id
 HANDLE h_process = NULL; // process handle
 TCHAR process_path[MAX_PATH] = { '\0' }; // process path
+wchar_t* prevToken = 0; // previous .exe process
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -599,7 +600,7 @@ unsigned int __stdcall generate_metrics(void *pv) {
 
 						// intializing tokens to retrieve .exe
 						wchar_t* curToken = 0;
-						wchar_t* nextToken = 0;
+						wchar_t* tempToken = 0;
 
 						// getting first token
 						curToken = _tcstok(process_path, L"\\");
@@ -607,11 +608,11 @@ unsigned int __stdcall generate_metrics(void *pv) {
 						// iterating through all tokens
 						while (curToken != NULL) {
 
-							nextToken = _tcstok(NULL, L"\\");
+							tempToken = _tcstok(NULL, L"\\");
 
 							// if current token is not null, assign to token as output
-							if (nextToken != NULL) {
-								curToken = nextToken;
+							if (tempToken != NULL) {
+								curToken = tempToken;
 							}
 
 							// break if we are at end of file path
@@ -620,11 +621,19 @@ unsigned int __stdcall generate_metrics(void *pv) {
 							}
 						}
 
+						// if token value did not change, do not log
+						if (prevToken == curToken) {
+							break;
+						}
+
 						// setting input value
 						SET_INPUT_UNICODE_STRING_ADDRESS(
 							INPUT_INDEX,
 							curToken
 						);
+
+						// setting previous token value equal to current token value
+						prevToken = curToken;
 					}
 				}
 				break; // all good, let's measure and log some metrics

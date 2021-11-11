@@ -51,7 +51,6 @@ extern "C" {
 #define INPUT_NAME_STRING "USRWA"
 #define INPUT_DESCRIPTION_STRINGS \
 	"Mouse cursor icon state."
-/* SLIDE 44 END */
 #define INPUT_TYPES \
 	STRING_COUNTER
 
@@ -72,6 +71,7 @@ ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_process_dctl(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_process_lctl(PINTEL_MODELER_INPUT_TABLE);
 /*--------------------------------------------------------------------------*/
+ESRV_API unsigned int __stdcall custom_event_listener_thread(void*);
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -19,14 +19,19 @@
 *** express and approved by Intel in writing.
 **/
 
-#ifndef __INCLUDE_KALMAN__
-#define __INCLUDE_KALMAN__
+#ifndef __INCLUDE_EVENT_DRIVEN_INCREMENTING_INPUT__
+#define __INCLUDE_EVENT_DRIVEN_INCREMENTING_INPUT__
 
 //-----------------------------------------------------------------------------
 // Headers inclusions.
 //-----------------------------------------------------------------------------
-#include <windows.h>
+#ifdef __PL_WINDOWS__
+	#include <windows.h>
+#endif // __PL_WINDOWS__
 #include "pub_intel_modeler.h"
+
+#include <assert.h>
+#include "user_waiting.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,75 +39,41 @@ extern "C" {
 /*--------------------------------------------------------------------------*/
 
 //-----------------------------------------------------------------------------
-// Kalman related defines.
+// Defines.
 //-----------------------------------------------------------------------------
-#define MOUSE_KALMAN_OPTIONS_SEPARATOR_CHAR ','
-#define MOUSE_KALMAN_OPTIONS_SEPARATOR_STRING ","
-#define MOUSE_KALMAN_OPTIONS_ASSIGN_CHAR '='
-#define MOUSE_KALMAN_OPTIONS_ASIGN_STRING "="
-#define MOUSE_KALMAN_OPTIONS_COUNT 6
-#define MOUSE_KALMAN_OPTIONS \
-	"NOISE_COVARIANCE", \
-	"Q", \
-	"MEASUREMENT_NOISE_COVARIANCE", \
-	"R", \
-	"PREDICTION_ERROR_COVARIANCE", \
-	"P"
-//-------------------------------------------------------------------------
-#define MOUSE_NOISE_RANGE_MAX (40)
-#define MOUSE_NOISE_RANGE_MIN \
-	(-MOUSE_NOISE_RANGE_MAX)
-#define INITIAL_NOISE_COVARIANCE \
-	(0.125) 
-#define INITIAL_MEASUREMENT_NOISE_COVARIANCE \
-	(0.30)
-#define INITIAL_PREDICTED_VALUE \
-	(0.0)
-#define INITIAL_PREDICTION_ERROR_COVARIANCE \
-	(10.0)
-#define INITIAL_KALMAN_GAIN \
-	(4.0)
+#define INPUT_PAUSE_IN_S 10
+#define INPUT_EVENT_INCREMENT 100
 
-//-----------------------------------------------------------------------------
-// Enums and structures.
-//-----------------------------------------------------------------------------
-typedef enum _kalman_options_ids {
-
-	MOUSE_KALMAN_OPTIONS_NOISE_COVARIANCE_ID,
-	MOUSE_KALMAN_OPTIONS_Q_ID,
-	MOUSE_KALMAN_OPTIONS_MEASUREMENT_NOISE_COVARIANCE_ID,
-	MOUSE_KALMAN_OPTIONS_R_ID,
-	MOUSE_KALMAN_OPTIONS_PREDICTION_ERROR_COVARIANCE_ID,
-	MOUSE_KALMAN_OPTIONS_P
-
-} KALMAN_OPTIONS_ID, *PKALMAN_OPTIONS_ID;
-
-typedef struct _kalman_state {
-
-	double noise_covariance; //q
-	double measurement_noise_covariance; //r
-	double predicted_value; //x
-	double prediction_error_covariance; // p
-	double kalman_gain; //k
-
-} KALMAN_STATE, *PKALMAN_STATE;
+/* SLIDE 44 START */
+#define INPUTS_COUNT 1
+#define INPUT_INDEX 0
+#define MOUSE_CURSOR_STATE_INDEX 0
+#define INPUT_NAME_STRING "USRWA"
+#define INPUT_DESCRIPTION_STRINGS \
+	"Mouse cursor icon state."
+/* SLIDE 44 END */
+#define INPUT_TYPES \
+	STRING_COUNTER
 
 //-----------------------------------------------------------------------------
 // Function prototypes.
 //-----------------------------------------------------------------------------
-ESRV_STATUS kalman_1d_init(
-	PKALMAN_STATE, 
-	double, 
-	double, 
-	double, 
-	double,
-	double
+ESRV_API ESRV_STATUS modeler_init_inputs(
+	unsigned int *, 
+	int *, 
+	int *, 
+	char *,
+	size_t
 );
-ESRV_STATUS kalman_1d(PKALMAN_STATE, double);
-ESRV_STATUS kalman_1d_parse_options(PKALMAN_STATE, char *, size_t);
+ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE);
+ESRV_API ESRV_STATUS modeler_close_inputs(PINTEL_MODELER_INPUT_TABLE);
+ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE);
+ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE);
+ESRV_STATUS modeler_process_dctl(PINTEL_MODELER_INPUT_TABLE);
+ESRV_STATUS modeler_process_lctl(PINTEL_MODELER_INPUT_TABLE);
 /*--------------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __INCLUDE_KALMAN__
+#endif // __INCLUDE_EVENT_DRIVEN_INCREMENTING_INPUT__
