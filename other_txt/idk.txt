@@ -1,5 +1,0 @@
-"--start" "--time_in_ms" "--pause" "1000" "--library" "$(XLSDK_BINS)\intel_modeler.dll" "--no_pl" "--kernel_priority_boost" "--device_options" "time=yes generate_key_file=yes performance=no output=test  output_folder='$(XLSDK_OUTPUTS)' il='$(XLSDK_BINS)\$(TargetFileName)' $(XLSDK_RUN_OUTPUT_OPTIONS)"
-
-
-
-"--start" "--time_in_ms" "--pause" "1000" "--library" "$(XLSDK_BINS)\intel_modeler.dll" "--no_pl" "--kernel_priority_boost" "--device_options" "time=yes generate_key_file=yes performance=no output=test output_folder='$(XLSDK_OUTPUTS)' il='$(XLSDK_BINS)\$(TargetFileName)' $(XLSDK_RUN_OUTPUT_OPTIONS)"
