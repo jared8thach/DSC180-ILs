@@ -2,16 +2,18 @@
 
 !.gitignore
 
-!foreground_window/
-foreground_window/*
-!foreground_window/src/
+!mouse_input/
+mouse_input/*
+!mouse_input/src/
 
 !user_waiting/
 user_waiting/*
 !user_waiting/src/
 
-!mouse_input/
-mouse_input/*
-!mouse_input/src/
+!foreground_window/
+foreground_window/*
+!foreground_window/src/
 
-!other_txt/
+!desktop_mapper/
+desktop_mapper/*
+!desktop_mapper/src/
