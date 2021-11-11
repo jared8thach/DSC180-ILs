@@ -583,6 +583,50 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				goto generate_metrics_exit; // time to leave!
 				break;
 			case CLICK_EVENT_INDEX:
+				// getting foreground window handle
+				h_window = GetForegroundWindow();
+				if (h_window != NULL) {
+
+					// getting thread id and process_id
+					thread_id = GetWindowThreadProcessId(h_window, &process_id);
+
+					// allowing access and getting process handle
+					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
+
+					// getting path to process if h_process is not null
+					if (h_process != NULL) {
+						(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+						// intializing tokens to retrieve .exe
+						wchar_t* curToken = 0;
+						wchar_t* nextToken = 0;
+
+						// getting first token
+						curToken = _tcstok(process_path, L"\\");
+
+						// iterating through all tokens
+						while (curToken != NULL) {
+
+							nextToken = _tcstok(NULL, L"\\");
+
+							// if current token is not null, assign to token as output
+							if (nextToken != NULL) {
+								curToken = nextToken;
+							}
+
+							// break if we are at end of file path
+							else {
+								break;
+							}
+						}
+
+						// setting input value
+						SET_INPUT_UNICODE_STRING_ADDRESS(
+							INPUT_INDEX,
+							curToken
+						);
+					}
+				}
 				break; // all good, let's measure and log some metrics
 			default:
 				goto generate_metrics_exit; // error condition
@@ -592,52 +636,6 @@ unsigned int __stdcall generate_metrics(void *pv) {
 		// Generate and store metrics.
 		//---------------------------------------------------------------------
 
-		wchar_t* curToken = 0;
-
-		// getting foreground window handle
-		h_window = GetForegroundWindow();
-		if (h_window != NULL) {
-
-			// getting thread id and process_id
-			thread_id = GetWindowThreadProcessId(h_window, &process_id);
-
-			// allowing access and getting process handle
-			h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
-
-			// getting path to process if h_process is not null
-			if (h_process != NULL) {
-				(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
-
-				// intializing tokens to retrieve .exe
-				//wchar_t* curToken = 0;
-				wchar_t* nextToken = 0;
-
-				// getting first token
-				curToken = _tcstok(process_path, L"\\");
-
-				// iterating through all tokens
-				while (curToken != NULL) {
-
-					nextToken = _tcstok(NULL, L"\\");
-
-					// if current token is not null, assign to token as output
-					if (nextToken != NULL) {
-						curToken = nextToken;
-					}
-
-					// break if we are at end of file path
-					else {
-						break;
-					}
-				}
-			}
-		}
-
-		// only log if foreground changes to a different foreground
-		SET_INPUT_UNICODE_STRING_ADDRESS(
-			INPUT_INDEX,
-			curToken
-		);
 		SET_INPUT_AS_LOGGED(INPUT_INDEX);
 		LOG_INPUT_VALUES;
 		SET_INPUT_AS_NOT_LOGGED(INPUT_INDEX);

@@ -34,10 +34,6 @@
 //-----------------------------------------------------------------------------
 unsigned long long int mouse_x = 0;
 unsigned long long int mouse_y = 0;
-KALMAN_STATE kalman_state_x = { 0.0 };
-KALMAN_STATE kalman_state_y = { 0.0 };
-unsigned long long int noisy_mouse_x = 0;
-unsigned long long int noisy_mouse_y = 0;
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -81,65 +77,7 @@ ESRV_API ESRV_STATUS modeler_init_inputs(
 		(*po != '\0')
 	) {
 
-		//---------------------------------------------------------------------
-		// Set options provided by user.
-		//---------------------------------------------------------------------
-		ret = kalman_1d_parse_options(
-			&kalman_state_x,
-			po,
-			os
-		);
-		if(ret != ESRV_SUCCESS) {
-			goto modeler_init_inputs_error;
-		}
-
-		//---------------------------------------------------------------------
-		// Set identical options to the second Kalman state.
-		//---------------------------------------------------------------------
-		kalman_state_y.kalman_gain = 
-			kalman_state_x.kalman_gain
-		;
-		kalman_state_y.measurement_noise_covariance = 
-			kalman_state_x.measurement_noise_covariance
-		;
-		kalman_state_y.noise_covariance = 
-			kalman_state_x.noise_covariance
-		;
-		kalman_state_y.predicted_value = 
-			kalman_state_x.predicted_value
-		;
-		kalman_state_y.prediction_error_covariance = 
-			kalman_state_x.prediction_error_covariance
-		;
-
 	} else {
-
-		//---------------------------------------------------------------------
-		// Initialize Kalman states.
-		//---------------------------------------------------------------------
-		ret = kalman_1d_init(
-			&kalman_state_x, 
-			INITIAL_NOISE_COVARIANCE,
-			INITIAL_MEASUREMENT_NOISE_COVARIANCE,
-			INITIAL_PREDICTED_VALUE,
-			INITIAL_PREDICTION_ERROR_COVARIANCE, 
-			INITIAL_KALMAN_GAIN
-		);
-		if(ret != ESRV_SUCCESS) {
-			goto modeler_init_inputs_error;
-		}
-		//---------------------------------------------------------------------
-		ret = kalman_1d_init(
-			&kalman_state_y, 
-			INITIAL_NOISE_COVARIANCE,
-			INITIAL_MEASUREMENT_NOISE_COVARIANCE,
-			INITIAL_PREDICTED_VALUE,
-			INITIAL_PREDICTION_ERROR_COVARIANCE, 
-			INITIAL_KALMAN_GAIN
-		);
-		if(ret != ESRV_SUCCESS) {
-			goto modeler_init_inputs_error;
-		}
 	}
 	//-------------------------------------------------------------------------
 	srand((unsigned)time(NULL));
@@ -281,43 +219,6 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 	mouse_y = (unsigned long long int)point.y;
 
 	//-------------------------------------------------------------------------
-	// Noise the measurement so it is not perfect.
-	//-------------------------------------------------------------------------
-	noise_x = GET_SOME_NOISE;
-	noise_y = GET_SOME_NOISE;
-	integer_value = (int)mouse_x + noise_x;
-	if(integer_value > 0) {
-		noisy_mouse_x = integer_value;
-	} else {
-		noisy_mouse_x = mouse_x;
-	}
-	integer_value = (int)mouse_y + noise_y;
-	if(integer_value > 0) {
-		noisy_mouse_y = integer_value;
-	} else {
-		noisy_mouse_y = mouse_y;
-	}
-
-	//-------------------------------------------------------------------------
-	// Get cursor position projection.
-	//-------------------------------------------------------------------------
-	ret = kalman_1d(
-		&kalman_state_x,
-		(double)noisy_mouse_x
-	);
-	if(ret != ESRV_SUCCESS) {
-		goto modeler_read_inputs_error;
-	}
-	//-------------------------------------------------------------------------
-	ret = kalman_1d(
-		&kalman_state_y,
-		(double)noisy_mouse_y
-	);
-	if(ret != ESRV_SUCCESS) {
-		goto modeler_read_inputs_error;
-	}
-
-	//-------------------------------------------------------------------------
 	// Set input values.
 	//-------------------------------------------------------------------------
 	SET_INPUT_ULL_VALUE(
@@ -328,26 +229,6 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 	SET_INPUT_ULL_VALUE(
 		MOUSE_Y_INPUT_INDEX, 
 		mouse_y
-	);
-	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		MOUSE_NOISY_X_INPUT_INDEX, 
-		noisy_mouse_x
-	);
-	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		MOUSE_NOISY_Y_INPUT_INDEX, 
-		noisy_mouse_y
-	);
-	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		MOUSE_X_KALMAN_INPUT_INDEX, 
-		(unsigned long long int)kalman_state_x.predicted_value
-	);
-	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		MOUSE_Y_KALMAN_INPUT_INDEX, 
-		(unsigned long long int)kalman_state_y.predicted_value
 	);
 
 	return(ESRV_SUCCESS);

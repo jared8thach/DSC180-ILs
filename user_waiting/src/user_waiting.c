@@ -30,15 +30,12 @@
 //-----------------------------------------------------------------------------
 // Global counter variable.
 //-----------------------------------------------------------------------------
-unsigned long long int counter = 0;
-unsigned long long int mouse_x = 0;
-unsigned long long int mouse_y = 0;
 char* cursor = "null";
-CURSORINFO ci;
-HCURSOR cursorArray[5];
-
-HWND window;
-DWORD thread;
+CURSORINFO ci = { 0 };
+HCURSOR cursorHandles[15] = { 0 };
+char* cursorStrings[15] = { '\0' };
+HWND window = 0;
+DWORD thread = 0;
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -62,15 +59,41 @@ ESRV_API ESRV_STATUS modeler_init_inputs(
 	//-------------------------------------------------------------------------
 	INPUT_BEGIN_EXCEPTIONS_HANDLING
 
-		assert(p != NULL);
+	assert(p != NULL);
 	assert(pfd != NULL);
 	assert(pfe != NULL);
 
-	cursorArray[0] = LoadCursor(NULL, IDC_ARROW);
-	cursorArray[1] = LoadCursor(NULL, IDC_APPSTARTING);
-	cursorArray[2] = LoadCursor(NULL, IDC_HAND);
-	cursorArray[3] = LoadCursor(NULL, IDC_IBEAM);
-	cursorArray[4] = LoadCursor(NULL, IDC_WAIT);
+	cursorHandles[0] = LoadCursor(NULL, IDC_APPSTARTING);
+	cursorHandles[1] = LoadCursor(NULL, IDC_ARROW);
+	cursorHandles[2] = LoadCursor(NULL, IDC_CROSS);
+	cursorHandles[3] = LoadCursor(NULL, IDC_HAND);
+	cursorHandles[4] = LoadCursor(NULL, IDC_HELP);
+	cursorHandles[5] = LoadCursor(NULL, IDC_IBEAM);
+	cursorHandles[6] = LoadCursor(NULL, IDC_ICON);
+	cursorHandles[7] = LoadCursor(NULL, IDC_NO);
+	cursorHandles[8] = LoadCursor(NULL, IDC_SIZEALL);
+	cursorHandles[9] = LoadCursor(NULL, IDC_SIZENESW);
+	cursorHandles[10] = LoadCursor(NULL, IDC_SIZENS);
+	cursorHandles[11] = LoadCursor(NULL, IDC_SIZENWSE);
+	cursorHandles[12] = LoadCursor(NULL, IDC_SIZEWE);
+	cursorHandles[13] = LoadCursor(NULL, IDC_UPARROW);
+	cursorHandles[14] = LoadCursor(NULL, IDC_WAIT);
+
+	cursorStrings[0] = "IDC_APPSTARTING";
+	cursorStrings[1] = "IDC_ARROW";
+	cursorStrings[2] = "IDC_CROSS";
+	cursorStrings[3] = "IDC_HAND";
+	cursorStrings[4] = "IDC_HELP";
+	cursorStrings[5] = "IDC_IBEAM";
+	cursorStrings[6] = "IDC_ICON";
+	cursorStrings[7] = "IDC_NO";
+	cursorStrings[8] = "IDC_SIZEALL";
+	cursorStrings[9] = "IDC_SIZENESW";
+	cursorStrings[10] = "IDC_SIZENS";
+	cursorStrings[11] = "IDC_SIZENWSE";
+	cursorStrings[12] = "IDC_SIZEWE";
+	cursorStrings[13] = "IDC_UPARROW";
+	cursorStrings[14] = "IDC_WAIT";
 
 	SIGNAL_EVENT_DRIVEN_MODE;
 	SET_INPUTS_COUNT(INPUTS_COUNT);
@@ -119,28 +142,6 @@ ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
 	//-------------------------------------------------------------------------
 	// Set input information.
-	//-------------------------------------------------------------------------
-	SET_INPUTS_NAME(INPUT_NAME_STRING);
-	SET_INPUT_DESCRIPTION(
-		MOUSE_X_INPUT_INDEX,
-		descriptions[MOUSE_X_INPUT_INDEX]
-	);
-	SET_INPUT_TYPE(
-		MOUSE_X_INPUT_INDEX,
-		ULL_COUNTER
-	);
-	//-------------------------------------------------------------------------
-	SET_INPUTS_NAME(INPUT_NAME_STRING);
-	SET_INPUT_DESCRIPTION(
-		MOUSE_Y_INPUT_INDEX,
-		descriptions[MOUSE_Y_INPUT_INDEX]
-	);
-	SET_INPUT_TYPE(
-		MOUSE_Y_INPUT_INDEX,
-		ULL_COUNTER
-	);
-	//-------------------------------------------------------------------------
-
 	//-------------------------------------------------------------------------
 	SET_INPUTS_NAME(INPUT_NAME_STRING);
 	SET_INPUT_DESCRIPTION(
@@ -212,68 +213,37 @@ ESRV_STATUS modeler_read_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 	BOOL bret = FALSE;
 	POINT point = { 0 };
 
-
 	assert(p != NULL);
-
-	//-------------------------------------------------------------------------
-	// Get cursor position.
-	//-------------------------------------------------------------------------
-	bret = GetCursorPos(&point);
-	if (bret == FALSE) {
-		/*goto modeler_read_inputs_error;*/
-	}
-	mouse_x = (unsigned long long int)point.x;
-	mouse_y = (unsigned long long int)point.y;
 
 	//-------------------------------------------------------------------------
 	// Get cursor icon.
 	//-------------------------------------------------------------------------
 	ci.cbSize = sizeof(ci);
 	GetCursorInfo(&ci);
-	if (cursorArray[0] == ci.hCursor) {
-		cursor = "IDC_ARROW";
-	}
-	else if (cursorArray[1] == ci.hCursor) {
-		cursor = "IDC_APPSTARTING";
-	}
-	else if (cursorArray[2] == ci.hCursor) {
-		cursor = "IDC_HAND";
-	}
-	else if (cursorArray[3] == ci.hCursor) {
-		cursor = "IDC_BEAM";
-	}
-	else if (cursorArray[4] == ci.hCursor) {
-		cursor = "IDC_WAIT";
-	}
-	else {
-		cursor = "OTHER";
+
+	//-------------------------------------------------------------------------
+	// Comparing cursor to cursorHandles array.
+	//-------------------------------------------------------------------------
+	for (int i = 0; i < 15; i = i + 1) {
+		if (cursorHandles[i] == ci.hCursor) {
+			cursor = cursorStrings[i];
+			break;
+		}
 	}
 
 	//-------------------------------------------------------------------------
 	// Set input values.
 	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		MOUSE_X_INPUT_INDEX,
-		mouse_x
-	);
-	//-------------------------------------------------------------------------
-	SET_INPUT_ULL_VALUE(
-		MOUSE_Y_INPUT_INDEX,
-		mouse_y
-	);
-	//-------------------------------------------------------------------------
-	//window = GetForeGroundWindow();
-	//GetWindowThreadProcessId(&window);
-	
-
 	SET_INPUT_STRING_ADDRESS(
 		MOUSE_CURSOR_STATE_INDEX,
 		cursor
 	);
 
 	return(ESRV_SUCCESS);
-	/*modeler_read_inputs_error;
-		return(ESRV_FAILURE);*/
+
+//modeler_read_inputs_error;
+
+	return(ESRV_FAILURE);
 
 		//-------------------------------------------------------------------------
 		// Exception handling section end.
@@ -318,32 +288,17 @@ ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 		//---------------------------------------------------------------------
 		dwret = WaitForSingleObject(
 			STOP_SIGNAL,
-			INPUT_PAUSE_IN_S * 100
+			INPUT_PAUSE_IN_S * 1000
 		);
 		switch (dwret) {
 		case WAIT_OBJECT_0:
-			//cursor = "WAIT_OBJECT_0";
 			goto modeler_listen_inputs_exit; // time to leave!
 			break;
 		case WAIT_TIMEOUT:
-			//cursor = "WAIT_TIMEOUT";
 			break; // all good, time to make a measurement
 		default:
 			goto modeler_listen_inputs_exit; // error condition
 		} // switch
-
-		//---------------------------------------------------------------------
-		// Generate incrementing input.
-		//---------------------------------------------------------------------
-		counter += INPUT_EVENT_INCREMENT;
-
-		//---------------------------------------------------------------------
-		// Set input values.
-		//---------------------------------------------------------------------
-		SET_INPUT_ULL_VALUE(
-			INPUT_INDEX,
-			counter
-		);
 
 		//---------------------------------------------------------------------
 		// Trigger asynchronous logging.

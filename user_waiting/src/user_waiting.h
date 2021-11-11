@@ -45,19 +45,15 @@ extern "C" {
 #define INPUT_EVENT_INCREMENT 100
 
 /* SLIDE 44 START */
-#define INPUTS_COUNT 3
+#define INPUTS_COUNT 1
 #define INPUT_INDEX 0
-#define MOUSE_X_INPUT_INDEX 0
-#define MOUSE_Y_INPUT_INDEX 1
-#define MOUSE_CURSOR_STATE_INDEX 2
-#define INPUT_NAME_STRING "MOUSE"
+#define MOUSE_CURSOR_STATE_INDEX 0
+#define INPUT_NAME_STRING "USRWA"
 #define INPUT_DESCRIPTION_STRINGS \
-	"Mouse X position in pixel(s)", \
-	"Mouse Y position in pixel(s)", \
-	"Mouse cursor state"
+	"Mouse cursor icon state."
 /* SLIDE 44 END */
 #define INPUT_TYPES \
-	ULL_COUNTER
+	STRING_COUNTER
 
 //-----------------------------------------------------------------------------
 // Function prototypes.

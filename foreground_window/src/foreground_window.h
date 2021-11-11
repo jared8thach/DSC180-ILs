@@ -38,9 +38,9 @@ extern "C" {
 //-----------------------------------------------------------------------------
 #define INPUTS_COUNT 1
 #define INPUT_INDEX 0
-#define INPUT_NAME_STRING "MOUSE-MSG-LOOP"
+#define INPUT_NAME_STRING "FGWND"
 #define INPUT_DESCRIPTION_STRINGS \
-	"Mouse clicks as seen in a mouse hook message loop."
+	"Foreground window .exe process."
 #define INPUT_TYPES \
 	STRING_COUNTER
 

@@ -1,9 +1,17 @@
 @echo off
+setlocal enableextensions
+setlocal enabledelayedexpansion
+%WINDIR%\System32\chcp.com 437 > NUL 2>&1
 
 rem //-------------------------------------------------------------------------
 rem // Check if script is ran as Administrator (required).
 rem //-------------------------------------------------------------------------
 %WINDIR%\System32\net.exe session 1>NUL 2>NUL || (ECHO This script requires elevated rights. & EXIT /b 1)
+
+rem //-------------------------------------------------------------------------
+rem // Changing directory to default C:\_xlsdk\run\windows directory.
+rem //-------------------------------------------------------------------------
+cd C:\_xlsdk\run\windows
 
 rem //-------------------------------------------------------------------------
 rem // Configurations.
