@@ -101,6 +101,8 @@ Return  : status.
 -----------------------------------------------------------------------------*/
 ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
+	// REGISTER DCTL
+
 	//-------------------------------------------------------------------------
 	// Generic variables.
 	//-------------------------------------------------------------------------
@@ -644,6 +646,8 @@ unsigned int __stdcall generate_metrics(void *pv) {
 		//---------------------------------------------------------------------
 		// Generate and store metrics.
 		//---------------------------------------------------------------------
+
+		// SIGNAL TO DESKTOP MAPPER AROUND HERE
 
 		SET_INPUT_AS_LOGGED(INPUT_INDEX);
 		LOG_INPUT_VALUES;

@@ -19,13 +19,14 @@
 *** express and approved by Intel in writing.
 **/
 
-#ifndef __INCLUDE_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
-#define __INCLUDE_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
+#ifndef __INCLUDE_YET_ANOTHER_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
+#define __INCLUDE_YET_ANOTHER_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
 
 //-----------------------------------------------------------------------------
 // Headers inclusions.
 //-----------------------------------------------------------------------------
 #include <windows.h>
+
 #include "pub_intel_modeler.h"
 
 #ifdef __cplusplus
@@ -36,31 +37,19 @@ extern "C" {
 //-----------------------------------------------------------------------------
 // Defines.
 //-----------------------------------------------------------------------------
-#define INPUTS_COUNT 3
-#define INPUT_GET_FOREGROUND_WINDOW_INDEX 0
-#define INPUT_GET_TOP_WINDOW_INDEX 1
-#define INPUT_GET_NEXT_WINDOW_INDEX 2
-#define INPUT_NAME_STRING "DSKTP"
+#define INPUTS_COUNT 1
+#define INPUT_INDEX 0
+#define INPUT_NAME_STRING "WINDOW-MSG-LOOP"
 #define INPUT_DESCRIPTION_STRINGS \
-	"GetForegroundWindow()", \
-	"GetTopWindow()", \
-	"GetNextWindow()"
+	"Mouse clicks as seen in a windows message loop."
 #define INPUT_TYPES \
-	ULL_COUNTER, \
-	ULL_COUNTER, \
-	ULL_COUNTER
+	STRING_COUNTER
 
 //-----------------------------------------------------------------------------
-// Mouse click defines.
+// Windows defines.
 //-----------------------------------------------------------------------------
-#define SLEEP_EVENTS_COUNT \
-	(1)
-#define WAIT_EVENTS_COUNT \
-	(2)
-#define STOP_EVENT_INDEX \
-		(0)
-#define CLICK_EVENT_INDEX \
-		(1)
+#define	WINDOW_CLASS \
+	"DEMO_USE_CLASS"
 
 //-----------------------------------------------------------------------------
 // Function prototypes.
@@ -79,12 +68,18 @@ ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_process_dctl(PINTEL_MODELER_INPUT_TABLE);
 ESRV_STATUS modeler_process_lctl(PINTEL_MODELER_INPUT_TABLE);
 //-----------------------------------------------------------------------------
-unsigned int __stdcall generate_metrics(void *);
-unsigned int __stdcall mouse_messages_loop(void *);
-LRESULT CALLBACK process_mouse_messages(int, WPARAM, LPARAM);
+ESRV_API unsigned int __stdcall window_manager_thread(void *);
+LRESULT CALLBACK window_proc(
+	HWND,
+	UINT,
+	WPARAM,
+	LPARAM
+);
+HWND make_window(PINTEL_MODELER_INPUT_TABLE);
+BOOL open_window(PINTEL_MODELER_INPUT_TABLE);
 /*--------------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __INCLUDE_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
+#endif // __INCLUDE_YET_ANOTHER_HAVE_A_WINDOW_MESSAGE_LOOP_INPUT__
