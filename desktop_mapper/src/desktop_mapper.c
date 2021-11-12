@@ -22,6 +22,8 @@
 //-----------------------------------------------------------------------------
 // Headers inclusions.
 //-----------------------------------------------------------------------------
+//#define _MEMORY_DEBUG 1
+
 #if defined (_DEBUG) || defined (__PL_DEBUG__)
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
@@ -43,13 +45,35 @@
 //-----------------------------------------------------------------------------
 HHOOK h_mouse_hook = NULL;
 HANDLE h_click_detected = NULL;
+//HWND h_window_detected = NULL;
 
+
+//-----------------------------------------------------------------------------
+// Global mouse hook data.
+//-----------------------------------------------------------------------------
 HWND h_window = NULL; // window handle
 DWORD thread_id = 0; // thread id
 DWORD process_id = 0; // process id
 HANDLE h_process = NULL; // process handle
 TCHAR process_path[MAX_PATH] = { '\0' }; // process path
 wchar_t* prevToken = 0; // previous .exe process
+
+//-------------------------------------------------------------------------
+// Data structures.
+//-------------------------------------------------------------------------
+typedef struct _windows_structure {
+	unsigned n_windows;
+	HWND windows[100];
+	LONG top_corners[100];
+} WINDOWS_STRUCTURE, * PWINDOWS_STRUCTURE;
+
+typedef struct _samples_structure {
+	unsigned entry_count;
+	PWINDOWS_STRUCTURE windows_entry;
+} SAMPLES_STRUCTURE, * PSAMPLES_STRUCTURE;
+
+WINDOWS_STRUCTURE windows_struct = { 0 };
+SAMPLES_STRUCTURE samples_struct = { 0 };
 
 // temp variables
 HWND h_window_2 = NULL;
@@ -86,8 +110,20 @@ ESRV_API ESRV_STATUS modeler_init_inputs(
 	//-------------------------------------------------------------------------
 	// Declare our intentions to the framework.
 	//-------------------------------------------------------------------------
-	SIGNAL_EVENT_DRIVEN_MODE
+	SIGNAL_EVENT_DRIVEN_MODE;
+	SIGNAL_PURE_EVENT_DRIVEN_MODE;
+	//SIGNAL_MULTIPLEXED_LOG_MODE;
 	SET_INPUTS_COUNT(INPUTS_COUNT);
+
+	////-------------------------------------------------------------------------
+	//// Initializing structures.
+	////-------------------------------------------------------------------------
+	//samples_struct.windows_entry = (PWINDOWS_STRUCTURE)malloc(sizeof(WINDOWS_STRUCTURE));
+	//assert(samples_struct.windows_entry != NULL);
+	//INPUT_DIAGNOSTIC_MALLOC(samples_struct.windows_entry, sizeof(WINDOWS_STRUCTURE));
+	//memset(samples_struct.windows_entry, 0, sizeof(WINDOWS_STRUCTURE));
+	//samples_struct.entry_count = 1;
+
 
 	return(ESRV_SUCCESS);
 
@@ -192,6 +228,16 @@ ESRV_API ESRV_STATUS modeler_close_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 		h_mouse_hook = NULL;
 	}
 
+	////-------------------------------------------------------------------------
+	//// Free dynamic memory of data structures.
+	////-------------------------------------------------------------------------
+	//if (samples_struct.windows_entry != NULL) {
+	//	INPUT_DIAGNOSTIC_FREE(samples_struct.windows_entry);
+	//	free(samples_struct.windows_entry);
+	//	samples_struct.windows_entry = NULL;
+	//	samples_struct.entry_count = 0;
+	//}
+
 	return(ESRV_SUCCESS);
 
 	//-------------------------------------------------------------------------
@@ -273,6 +319,15 @@ ESRV_STATUS modeler_listen_inputs(PINTEL_MODELER_INPUT_TABLE px) {
 	if(h_click_detected == NULL) {
 		goto custom_event_listner_thread_exit;
 	}
+	//h_window_detected = CreateEvent(
+	//	NULL,
+	//	FALSE,
+	//	FALSE,
+	//	NULL
+	//);
+	//if (h_window_detected == NULL) {
+	//	goto custom_event_listner_thread_exit;
+	//}
 	//-------------------------------------------------------------------------
 	h_collector_thread = (HANDLE)_beginthreadex(
 		NULL,
@@ -570,8 +625,10 @@ unsigned int __stdcall generate_metrics(void *pv) {
 	//-------------------------------------------------------------------------
 	wait_events[STOP_EVENT_INDEX] = STOP_SIGNAL;
 	wait_events[CLICK_EVENT_INDEX] = h_click_detected;
+	//wait_events[WINDOW_EVENT_INDEX] = h_window_detected;
 	assert(wait_events[STOP_EVENT_INDEX] != NULL);
 	assert(wait_events[CLICK_EVENT_INDEX] != NULL);
+	//assert(wait_events[WINDOW_EVENT_INDEX] != NULL);
 
 	//-------------------------------------------------------------------------
 	// Waiting for the end of run.
@@ -596,9 +653,10 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				h_window = GetForegroundWindow();
 				h_window_2 = GetTopWindow(h_window);
 				h_window_3 = GetNextWindow(h_window, GW_HWNDNEXT);
+
 				GetWindowRect(
 					h_window,
-					&window_rect
+					window_rect
 				);
 
 				//h_window = GetTopWindow(h_window);

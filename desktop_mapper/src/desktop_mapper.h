@@ -61,6 +61,8 @@ extern "C" {
 		(0)
 #define CLICK_EVENT_INDEX \
 		(1)
+#define WINDOW_EVENT_INDEX \
+		(2)
 
 //-----------------------------------------------------------------------------
 // Function prototypes.
