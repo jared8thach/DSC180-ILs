@@ -111,7 +111,7 @@ ESRV_API ESRV_STATUS modeler_init_inputs(
 	// Declare our intentions to the framework.
 	//-------------------------------------------------------------------------
 	SIGNAL_EVENT_DRIVEN_MODE;
-	SIGNAL_PURE_EVENT_DRIVEN_MODE;
+	//SIGNAL_PURE_EVENT_DRIVEN_MODE;
 	//SIGNAL_MULTIPLEXED_LOG_MODE;
 	SET_INPUTS_COUNT(INPUTS_COUNT);
 
