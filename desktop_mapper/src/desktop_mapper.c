@@ -392,6 +392,7 @@ Return  : status.
 ESRV_STATUS modeler_process_dctl(PINTEL_MODELER_INPUT_TABLE p) {
 
 	// RECEIVES DCTL FROM FOREGROUND WINDOW
+	// REGISTER TO RECEIVE
 
 	//-------------------------------------------------------------------------
 
