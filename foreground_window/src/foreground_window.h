@@ -36,13 +36,19 @@ extern "C" {
 //-----------------------------------------------------------------------------
 // Defines.
 //-----------------------------------------------------------------------------
-#define INPUTS_COUNT 1
-#define INPUT_INDEX 0
+#define INPUTS_COUNT 3
+#define INPUT_INDEX_EXE_PROCESS 0
+#define INPUT_INDEX_IS_IMMERSIVE 1
+#define INPUT_INDEX_IS_HUNG 2
 #define INPUT_NAME_STRING "FGWND"
 #define INPUT_DESCRIPTION_STRINGS \
-	"Foreground window .exe process."
+	"Foreground window .exe process.", \
+	"Foreground window is immersive.", \
+	"Foreground window is hung."
 #define INPUT_TYPES \
-	STRING_COUNTER
+	STRING_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER
 
 //-----------------------------------------------------------------------------
 // Mouse click defines.

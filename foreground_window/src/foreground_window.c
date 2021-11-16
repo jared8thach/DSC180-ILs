@@ -44,12 +44,29 @@
 HHOOK h_mouse_hook = NULL;
 HANDLE h_click_detected = NULL;
 
+//-----------------------------------------------------------------------------
+// Global windows data.
+//-----------------------------------------------------------------------------
 HWND h_window = NULL; // window handle
 DWORD thread_id = 0; // thread id
 DWORD process_id = 0; // process id
 HANDLE h_process = NULL; // process handle
 TCHAR process_path[MAX_PATH] = { '\0' }; // process path
 wchar_t* prevToken = 0; // previous .exe process
+
+// defining structure and callback function
+typedef struct {
+	DWORD parent_process_id;
+	DWORD child_process_id;
+} parent_child_info;
+
+BOOL CALLBACK EnumChildWindowsCallback(HWND hWnd, LPARAM lp) {
+	parent_child_info* info = (parent_child_info*)lp;
+	DWORD pid = 0;
+	GetWindowThreadProcessId(hWnd, &pid);
+	if (pid != info->parent_process_id) info->child_process_id = pid;
+	return TRUE;
+}
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -586,15 +603,24 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				goto generate_metrics_exit; // time to leave!
 				break;
 			case CLICK_EVENT_INDEX:
-				// getting foreground window handle
+				// getting foreground window handle and setting isImmersive and isHung to default FALSE
 				h_window = GetForegroundWindow();
+				BOOL isImmersive = FALSE;
+				BOOL isHung = FALSE;
+
 				if (h_window != NULL) {
 
 					// getting thread id and process_id
-					thread_id = GetWindowThreadProcessId(h_window, &process_id);
+					(void)GetWindowThreadProcessId(h_window, &process_id);
+
+					// using parent/child structure and callback function to get .exe
+					parent_child_info info = { 0 };
+					(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
+					info.child_process_id = info.parent_process_id;
+					(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
 
 					// allowing access and getting process handle
-					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
+					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
 
 					// getting path to process if h_process is not null
 					if (h_process != NULL) {
@@ -623,15 +649,28 @@ unsigned int __stdcall generate_metrics(void *pv) {
 							}
 						}
 
+						// checking if process is immersive
+						isImmersive = IsImmersiveProcess(h_process);
+						// checking if window is hung
+						isHung = IsHungAppWindow(h_window);
+
 						// if token value did not change, do not log
 						if (prevToken == curToken) {
 							break;
 						}
 
-						// setting input value
+						// setting input values
 						SET_INPUT_UNICODE_STRING_ADDRESS(
-							INPUT_INDEX,
+							INPUT_INDEX_EXE_PROCESS,
 							curToken
+						);
+						SET_INPUT_ULL_VALUE(
+							INPUT_INDEX_IS_IMMERSIVE,
+							h_process
+						);
+						SET_INPUT_ULL_VALUE(
+							INPUT_INDEX_IS_HUNG,
+							isImmersive
 						);
 
 						// setting previous token value equal to current token value
@@ -649,9 +688,13 @@ unsigned int __stdcall generate_metrics(void *pv) {
 
 		// SIGNAL TO DESKTOP MAPPER AROUND HERE
 
-		SET_INPUT_AS_LOGGED(INPUT_INDEX);
+		for (int i = 0; i < INPUTS_COUNT; i = i + 1) {
+			SET_INPUT_AS_LOGGED(i);
+		}
 		LOG_INPUT_VALUES;
-		SET_INPUT_AS_NOT_LOGGED(INPUT_INDEX);
+		for (int i = 0; i < INPUTS_COUNT; i = i + 1) {
+			SET_INPUT_AS_NOT_LOGGED(i);
+		}
 		INPUT_DIAGNOSTIC_HIGHLIGHTED("Click!");
 
 	} // while need to run
