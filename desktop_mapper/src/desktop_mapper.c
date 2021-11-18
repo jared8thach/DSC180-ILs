@@ -673,151 +673,166 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				//	window_rect
 				//);
 
-				h_window = NULL; // window handle
-				thread_id = 0; // thread id
-				process_id = 0; // process id
-				h_process = NULL; // process handle
 
-				// getting foreground window handle and setting isImmersive and isHung to default FALSE
 				h_window = GetForegroundWindow();
-				BOOL isImmersive = FALSE;
-				BOOL isHung = FALSE;
-
 				if (h_window != NULL) {
-
-					// getting thread id and process_id
-					(void)GetWindowThreadProcessId(h_window, &process_id);
-
-					// using parent/child structure and callback function to get .exe
-					parent_child_info info = { 0 };
-					(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
-					info.child_process_id = info.parent_process_id;
-					(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
-
-					// allowing access and getting process handle
-					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
-
-					// getting path to process if h_process is not null
-					if (h_process != NULL) {
-						(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
-
-						// intializing tokens to retrieve .exe
-						wchar_t* curToken = 0;
-						wchar_t* tempToken = 0;
-
-						// getting first token
-						curToken = _tcstok(process_path, L"\\");
-
-						// iterating through all tokens
-						while (curToken != NULL) {
-
-							tempToken = _tcstok(NULL, L"\\");
-
-							// if current token is not null, assign to token as output
-							if (tempToken != NULL) {
-								curToken = tempToken;
-							}
-
-							// break if we are at end of file path
-							else {
-								break;
-							}
-						}
-
-						// checking if process is immersive
-						isImmersive = IsImmersiveProcess(h_process);
-						// checking if window is hung
-						isHung = IsHungAppWindow(h_window);
-
-						SET_INPUT_ULL_VALUE(
-							INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX,
-							h_window // 5439954, 1902670
-						);
-
-						SET_INPUT_UNICODE_STRING_ADDRESS(
-							INPUT_GET_FOREGROUND_WINDOW_EXE_INDEX,
-							curToken
-						);
-					}
+					map_foreground(p, h_window, 0);
 				}
 
-				thread_id = 0; // thread id
-				process_id = 0; // process id
-				h_process = NULL; // process handle
-
-				// getting foreground window handle and setting isImmersive and isHung to default FALSE
 				h_window = GetNextWindow(h_window, GW_HWNDNEXT);
-				isImmersive = FALSE;
-				isHung = FALSE;
-
 				if (h_window != NULL) {
-
-					// getting thread id and process_id
-					(void)GetWindowThreadProcessId(h_window, &process_id);
-
-					// using parent/child structure and callback function to get .exe
-					parent_child_info info = { 0 };
-					(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
-					info.child_process_id = info.parent_process_id;
-					(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
-
-					// allowing access and getting process handle
-					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
-
-					// getting path to process if h_process is not null
-					if (h_process != NULL) {
-						(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
-
-						// intializing tokens to retrieve .exe
-						wchar_t* curToken = 0;
-						wchar_t* tempToken = 0;
-
-						// getting first token
-						curToken = _tcstok(process_path, L"\\");
-
-						// iterating through all tokens
-						while (curToken != NULL) {
-
-							tempToken = _tcstok(NULL, L"\\");
-
-							// if current token is not null, assign to token as output
-							if (tempToken != NULL) {
-								curToken = tempToken;
-							}
-
-							// break if we are at end of file path
-							else {
-								break;
-							}
-						}
-
-						// checking if process is immersive
-						isImmersive = IsImmersiveProcess(h_process);
-						// checking if window is hung
-						isHung = IsHungAppWindow(h_window);
-
-						SET_INPUT_ULL_VALUE(
-							INPUT_GET_NEXT_WINDOW_HANDLE_INDEX,
-							h_window
-						);
-
-						//prints(curToken.GetType());
-						//printf("\n");
-						//printf("%d", *curToken);
-						//printf("\n");
-						//printf("%s", "conhost.exe");
-
-
-						//if ((wchar_t *)curToken == (wchar_t*)"conhost.exe") {
-						//	break;
-						//}
-
-						SET_INPUT_UNICODE_STRING_ADDRESS(
-							INPUT_GET_NEXT_WINDOW_EXE_INDEX,
-							curToken
-						);
-					}
+					map_foreground(p, h_window, 1);
 				}
+
+
+				//h_window = NULL; // window handle
+				//thread_id = 0; // thread id
+				//process_id = 0; // process id
+				//h_process = NULL; // process handle
+
+				//// getting foreground window handle and setting isImmersive and isHung to default FALSE
+				//h_window = GetForegroundWindow();
+				//BOOL isImmersive = FALSE;
+				//BOOL isHung = FALSE;
+
+				//if (h_window != NULL) {
+
+				//	// getting thread id and process_id
+				//	(void)GetWindowThreadProcessId(h_window, &process_id);
+
+				//	// using parent/child structure and callback function to get .exe
+				//	parent_child_info info = { 0 };
+				//	(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
+				//	info.child_process_id = info.parent_process_id;
+				//	(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
+
+				//	// allowing access and getting process handle
+				//	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
+
+				//	// getting path to process if h_process is not null
+				//	if (h_process != NULL) {
+				//		(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+				//		// intializing tokens to retrieve .exe
+				//		wchar_t* curToken = 0;
+				//		wchar_t* tempToken = 0;
+
+				//		// getting first token
+				//		curToken = _tcstok(process_path, L"\\");
+
+				//		// iterating through all tokens
+				//		while (curToken != NULL) {
+
+				//			tempToken = _tcstok(NULL, L"\\");
+
+				//			// if current token is not null, assign to token as output
+				//			if (tempToken != NULL) {
+				//				curToken = tempToken;
+				//			}
+
+				//			// break if we are at end of file path
+				//			else {
+				//				break;
+				//			}
+				//		}
+
+				//		// checking if process is immersive
+				//		isImmersive = IsImmersiveProcess(h_process);
+				//		// checking if window is hung
+				//		isHung = IsHungAppWindow(h_window);
+
+				//		SET_INPUT_ULL_VALUE(
+				//			INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX,
+				//			h_window // 5439954, 1902670
+				//		);
+
+				//		SET_INPUT_UNICODE_STRING_ADDRESS(
+				//			INPUT_GET_FOREGROUND_WINDOW_EXE_INDEX,
+				//			curToken
+				//		);
+				//	}
+				//}
+
+
+
+
+				//thread_id = 0; // thread id
+				//process_id = 0; // process id
+				//h_process = NULL; // process handle
+
+				//// getting foreground window handle and setting isImmersive and isHung to default FALSE
+				//h_window = GetNextWindow(h_window, GW_HWNDNEXT);
+				//isImmersive = FALSE;
+				//isHung = FALSE;
+
+				//if (h_window != NULL) {
+
+				//	// getting thread id and process_id
+				//	(void)GetWindowThreadProcessId(h_window, &process_id);
+
+				//	// using parent/child structure and callback function to get .exe
+				//	parent_child_info info = { 0 };
+				//	(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
+				//	info.child_process_id = info.parent_process_id;
+				//	(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
+
+				//	// allowing access and getting process handle
+				//	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
+
+				//	// getting path to process if h_process is not null
+				//	if (h_process != NULL) {
+				//		(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+				//		// intializing tokens to retrieve .exe
+				//		wchar_t* curToken = 0;
+				//		wchar_t* tempToken = 0;
+
+				//		// getting first token
+				//		curToken = _tcstok(process_path, L"\\");
+
+				//		// iterating through all tokens
+				//		while (curToken != NULL) {
+
+				//			tempToken = _tcstok(NULL, L"\\");
+
+				//			// if current token is not null, assign to token as output
+				//			if (tempToken != NULL) {
+				//				curToken = tempToken;
+				//			}
+
+				//			// break if we are at end of file path
+				//			else {
+				//				break;
+				//			}
+				//		}
+
+				//		// checking if process is immersive
+				//		isImmersive = IsImmersiveProcess(h_process);
+				//		// checking if window is hung
+				//		isHung = IsHungAppWindow(h_window);
+
+				//		SET_INPUT_ULL_VALUE(
+				//			INPUT_GET_NEXT_WINDOW_HANDLE_INDEX,
+				//			h_window
+				//		);
+
+				//		//prints(curToken.GetType());
+				//		//printf("\n");
+				//		//printf("%d", *curToken);
+				//		//printf("\n");
+				//		//printf("%s", "conhost.exe");
+
+
+				//		//if ((wchar_t *)curToken == (wchar_t*)"conhost.exe") {
+				//		//	break;
+				//		//}
+
+				//		SET_INPUT_UNICODE_STRING_ADDRESS(
+				//			INPUT_GET_NEXT_WINDOW_EXE_INDEX,
+				//			curToken
+				//		);
+				//	}
+				//}
 
 				SET_INPUT_ULL_VALUE(
 					INPUT_999_INDEX,
@@ -857,4 +872,68 @@ generate_metrics_exit:
 	//-------------------------------------------------------------------------
 	INPUT_END_EXCEPTIONS_HANDLING(p)
 
+}
+
+void map_foreground(PINTEL_MODELER_INPUT_TABLE p, HWND hWnd, int index) {
+
+	thread_id = 0; // thread id
+	process_id = 0; // process id
+	h_process = NULL; // process handle
+	//process_path[MAX_PATH] = { '\0' }; // process path
+	prevToken = 0; // previous .exe process
+
+	// getting thread id and process_id
+	(void)GetWindowThreadProcessId(hWnd, &process_id);
+
+	// using parent/child structure and callback function to get .exe
+	parent_child_info info = { 0 };
+	(void)GetWindowThreadProcessId(hWnd, &info.parent_process_id);
+	info.child_process_id = info.parent_process_id;
+	(void)EnumChildWindows(hWnd, EnumChildWindowsCallback, (LPARAM)&info);
+
+	// allowing access and getting process handle
+	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
+
+	// getting path to process if h_process is not null
+	if (h_process != NULL) {
+		(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+		// intializing tokens to retrieve .exe
+		wchar_t* curToken = 0;
+		wchar_t* tempToken = 0;
+
+		// getting first token
+		curToken = _tcstok(process_path, L"\\");
+
+		// iterating through all tokens
+		while (curToken != NULL) {
+
+			tempToken = _tcstok(NULL, L"\\");
+
+			// if current token is not null, assign to token as output
+			if (tempToken != NULL) {
+				curToken = tempToken;
+			}
+
+			// break if we are at end of file path
+			else {
+				break;
+			}
+		}
+
+		// checking if process is immersive
+		BOOL isImmersive = IsImmersiveProcess(h_process);
+		// checking if window is hung
+		BOOL temp_isHung = IsHungAppWindow(hWnd);
+
+		SET_INPUT_ULL_VALUE(
+			index,
+			hWnd
+		);
+
+		SET_INPUT_UNICODE_STRING_ADDRESS(
+			index+2,
+			curToken
+		);
+	}
 }

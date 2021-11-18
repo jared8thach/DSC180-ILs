@@ -90,6 +90,8 @@ ESRV_STATUS modeler_process_lctl(PINTEL_MODELER_INPUT_TABLE);
 unsigned int __stdcall generate_metrics(void *);
 unsigned int __stdcall mouse_messages_loop(void *);
 LRESULT CALLBACK process_mouse_messages(int, WPARAM, LPARAM);
+
+void map_foreground(PINTEL_MODELER_INPUT_TABLE, HWND, int);
 /*--------------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
