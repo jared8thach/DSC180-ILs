@@ -731,7 +731,7 @@ unsigned int __stdcall generate_metrics(void *pv) {
 
 						SET_INPUT_ULL_VALUE(
 							INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX,
-							h_window
+							h_window // 5439954, 1902670
 						);
 
 						SET_INPUT_UNICODE_STRING_ADDRESS(
@@ -800,6 +800,17 @@ unsigned int __stdcall generate_metrics(void *pv) {
 							INPUT_GET_NEXT_WINDOW_HANDLE_INDEX,
 							h_window
 						);
+
+						//prints(curToken.GetType());
+						//printf("\n");
+						//printf("%d", *curToken);
+						//printf("\n");
+						//printf("%s", "conhost.exe");
+
+
+						//if ((wchar_t *)curToken == (wchar_t*)"conhost.exe") {
+						//	break;
+						//}
 
 						SET_INPUT_UNICODE_STRING_ADDRESS(
 							INPUT_GET_NEXT_WINDOW_EXE_INDEX,
