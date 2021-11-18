@@ -36,18 +36,24 @@ extern "C" {
 //-----------------------------------------------------------------------------
 // Defines.
 //-----------------------------------------------------------------------------
-#define INPUTS_COUNT 3
-#define INPUT_GET_FOREGROUND_WINDOW_INDEX 0
-#define INPUT_GET_TOP_WINDOW_INDEX 1
-#define INPUT_GET_NEXT_WINDOW_INDEX 2
+#define INPUTS_COUNT 5
+#define INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX 0
+#define INPUT_GET_NEXT_WINDOW_HANDLE_INDEX 1
+#define INPUT_GET_FOREGROUND_WINDOW_EXE_INDEX 2
+#define INPUT_GET_NEXT_WINDOW_EXE_INDEX 3
+#define INPUT_999_INDEX 4
 #define INPUT_NAME_STRING "DSKTP"
 #define INPUT_DESCRIPTION_STRINGS \
-	"GetForegroundWindow()", \
-	"GetTopWindow()", \
-	"GetNextWindow()"
+	"GetForegroundWindow() HWND", \
+	"GetNextWindow() HWND", \
+	"GetForegroundWindow() .exe", \
+	"GetNextWindow() .exe", \
+	"999"
 #define INPUT_TYPES \
 	ULL_COUNTER, \
 	ULL_COUNTER, \
+	STRING_COUNTER, \
+	STRING_COUNTER, \
 	ULL_COUNTER
 
 //-----------------------------------------------------------------------------

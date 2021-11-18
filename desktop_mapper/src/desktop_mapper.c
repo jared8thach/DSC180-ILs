@@ -80,6 +80,20 @@ HWND h_window_2 = NULL;
 HWND h_window_3 = NULL;
 LPRECT window_rect = { 0 };
 
+// defining structure and callback function
+typedef struct {
+	DWORD parent_process_id;
+	DWORD child_process_id;
+} parent_child_info;
+
+BOOL CALLBACK EnumChildWindowsCallback(HWND hWnd, LPARAM lp) {
+	parent_child_info* info = (parent_child_info*)lp;
+	DWORD pid = 0;
+	GetWindowThreadProcessId(hWnd, &pid);
+	if (pid != info->parent_process_id) info->child_process_id = pid;
+	return TRUE;
+}
+
 
 /*-----------------------------------------------------------------------------
 Function: modeler_init_inputs
@@ -651,84 +665,152 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				break;
 			case CLICK_EVENT_INDEX:
 
-				h_window = GetForegroundWindow();
-				h_window_2 = GetTopWindow(h_window);
-				h_window_3 = GetNextWindow(h_window, GW_HWNDNEXT);
-
-				GetWindowRect(
-					h_window,
-					window_rect
-				);
-
-				//h_window = GetTopWindow(h_window);
-
-				//// getting foreground window handle
 				//h_window = GetForegroundWindow();
-				//if (h_window != NULL) {
+				/*h_window_2 = GetNextWindow(h_window, GW_HWNDNEXT);*/
 
-				//	// getting thread id and process_id
-				//	thread_id = GetWindowThreadProcessId(h_window, &process_id);
+				//GetWindowRect(
+				//	h_window,
+				//	window_rect
+				//);
 
-				//	// allowing access and getting process handle
-				//	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
+				h_window = NULL; // window handle
+				thread_id = 0; // thread id
+				process_id = 0; // process id
+				h_process = NULL; // process handle
 
-				//	// getting path to process if h_process is not null
-				//	if (h_process != NULL) {
-				//		(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+				// getting foreground window handle and setting isImmersive and isHung to default FALSE
+				h_window = GetForegroundWindow();
+				BOOL isImmersive = FALSE;
+				BOOL isHung = FALSE;
 
-				//		// intializing tokens to retrieve .exe
-				//		wchar_t* curToken = 0;
-				//		wchar_t* tempToken = 0;
+				if (h_window != NULL) {
 
-				//		// getting first token
-				//		curToken = _tcstok(process_path, L"\\");
+					// getting thread id and process_id
+					(void)GetWindowThreadProcessId(h_window, &process_id);
 
-				//		// iterating through all tokens
-				//		while (curToken != NULL) {
+					// using parent/child structure and callback function to get .exe
+					parent_child_info info = { 0 };
+					(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
+					info.child_process_id = info.parent_process_id;
+					(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
 
-				//			tempToken = _tcstok(NULL, L"\\");
+					// allowing access and getting process handle
+					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
 
-				//			// if current token is not null, assign to token as output
-				//			if (tempToken != NULL) {
-				//				curToken = tempToken;
-				//			}
+					// getting path to process if h_process is not null
+					if (h_process != NULL) {
+						(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
 
-				//			// break if we are at end of file path
-				//			else {
-				//				break;
-				//			}
-				//		}
+						// intializing tokens to retrieve .exe
+						wchar_t* curToken = 0;
+						wchar_t* tempToken = 0;
 
-				//		// if token value did not change, do not log
-				//		if (prevToken == curToken) {
-				//			break;
-				//		}
+						// getting first token
+						curToken = _tcstok(process_path, L"\\");
 
-				//		// setting input value
-				//		SET_INPUT_UNICODE_STRING_ADDRESS(
-				//			INPUT_INDEX,
-				//			curToken
-				//		);
+						// iterating through all tokens
+						while (curToken != NULL) {
 
-				//		// setting previous token value equal to current token value
-				//		prevToken = curToken;
-				//	}
-				//}
-				//break; // all good, let's measure and log some metrics
+							tempToken = _tcstok(NULL, L"\\");
+
+							// if current token is not null, assign to token as output
+							if (tempToken != NULL) {
+								curToken = tempToken;
+							}
+
+							// break if we are at end of file path
+							else {
+								break;
+							}
+						}
+
+						// checking if process is immersive
+						isImmersive = IsImmersiveProcess(h_process);
+						// checking if window is hung
+						isHung = IsHungAppWindow(h_window);
+
+						SET_INPUT_ULL_VALUE(
+							INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX,
+							h_window
+						);
+
+						SET_INPUT_UNICODE_STRING_ADDRESS(
+							INPUT_GET_FOREGROUND_WINDOW_EXE_INDEX,
+							curToken
+						);
+					}
+				}
+
+				thread_id = 0; // thread id
+				process_id = 0; // process id
+				h_process = NULL; // process handle
+
+				// getting foreground window handle and setting isImmersive and isHung to default FALSE
+				h_window = GetNextWindow(h_window, GW_HWNDNEXT);
+				isImmersive = FALSE;
+				isHung = FALSE;
+
+				if (h_window != NULL) {
+
+					// getting thread id and process_id
+					(void)GetWindowThreadProcessId(h_window, &process_id);
+
+					// using parent/child structure and callback function to get .exe
+					parent_child_info info = { 0 };
+					(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
+					info.child_process_id = info.parent_process_id;
+					(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
+
+					// allowing access and getting process handle
+					h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
+
+					// getting path to process if h_process is not null
+					if (h_process != NULL) {
+						(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
+
+						// intializing tokens to retrieve .exe
+						wchar_t* curToken = 0;
+						wchar_t* tempToken = 0;
+
+						// getting first token
+						curToken = _tcstok(process_path, L"\\");
+
+						// iterating through all tokens
+						while (curToken != NULL) {
+
+							tempToken = _tcstok(NULL, L"\\");
+
+							// if current token is not null, assign to token as output
+							if (tempToken != NULL) {
+								curToken = tempToken;
+							}
+
+							// break if we are at end of file path
+							else {
+								break;
+							}
+						}
+
+						// checking if process is immersive
+						isImmersive = IsImmersiveProcess(h_process);
+						// checking if window is hung
+						isHung = IsHungAppWindow(h_window);
+
+						SET_INPUT_ULL_VALUE(
+							INPUT_GET_NEXT_WINDOW_HANDLE_INDEX,
+							h_window
+						);
+
+						SET_INPUT_UNICODE_STRING_ADDRESS(
+							INPUT_GET_NEXT_WINDOW_EXE_INDEX,
+							curToken
+						);
+					}
+				}
 
 				SET_INPUT_ULL_VALUE(
-					INPUT_GET_FOREGROUND_WINDOW_INDEX,
-					h_window
-				);
-
-				SET_INPUT_ULL_VALUE(
-					INPUT_GET_TOP_WINDOW_INDEX,
-					h_window_2
-				);
-
-				SET_INPUT_ULL_VALUE(
-					INPUT_GET_NEXT_WINDOW_INDEX,
-					h_window_3
+					INPUT_999_INDEX,
+					999
 				);
 
 				break;
