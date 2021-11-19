@@ -68,14 +68,14 @@ extern "C" {
 	"Window 1 upper left y coordinate.", \
 	"Window 1 bottom right x coordinate.", \
 	"Window 1 bottom right y coordinate.", \
-	"Window 1 HWND.", \
-	"Window 1 .exe.", \
-	"Window 1 is hung.", \
-	"Window 1 is immersive.", \
-	"Window 1 upper left x coordinate.", \
-	"Window 1 upper left y coordinate.", \
-	"Window 1 bottom right x coordinate.", \
-	"Window 1 bottom right y coordinate.", \
+	"Window 2 HWND.", \
+	"Window 2 .exe.", \
+	"Window 2 is hung.", \
+	"Window 2 is immersive.", \
+	"Window 2 upper left x coordinate.", \
+	"Window 2 upper left y coordinate.", \
+	"Window 2 bottom right x coordinate.", \
+	"Window 2 bottom right y coordinate.", \
 	"999"
 #define INPUT_TYPES \
 	ULL_COUNTER, \
