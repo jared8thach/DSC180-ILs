@@ -57,6 +57,10 @@ DWORD process_id = 0; // process id
 HANDLE h_process = NULL; // process handle
 TCHAR process_path[MAX_PATH] = { '\0' }; // process path
 wchar_t* prevToken = 0; // previous .exe process
+BOOL isHung = FALSE;
+BOOL isImmersive = FALSE;
+RECT window_rect = { 0 }; // windows rect object
+
 
 //-------------------------------------------------------------------------
 // Data structures.
@@ -74,11 +78,6 @@ typedef struct _samples_structure {
 
 WINDOWS_STRUCTURE windows_struct = { 0 };
 SAMPLES_STRUCTURE samples_struct = { 0 };
-
-// temp variables
-HWND h_window_2 = NULL;
-HWND h_window_3 = NULL;
-LPRECT window_rect = { 0 };
 
 // defining structure and callback function
 typedef struct {
@@ -674,166 +673,18 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				//);
 
 
+				// sets inputs for input index 0 and 2
 				h_window = GetForegroundWindow();
 				if (h_window != NULL) {
-					map_foreground(p, h_window, 0);
+					get_window_info(p, h_window, 0);
 				}
 
+				// sets inputs for input index 1 and 3
 				h_window = GetNextWindow(h_window, GW_HWNDNEXT);
 				if (h_window != NULL) {
-					map_foreground(p, h_window, 1);
+					get_window_info(p, h_window, 1);
 				}
-
-
-				//h_window = NULL; // window handle
-				//thread_id = 0; // thread id
-				//process_id = 0; // process id
-				//h_process = NULL; // process handle
-
-				//// getting foreground window handle and setting isImmersive and isHung to default FALSE
-				//h_window = GetForegroundWindow();
-				//BOOL isImmersive = FALSE;
-				//BOOL isHung = FALSE;
-
-				//if (h_window != NULL) {
-
-				//	// getting thread id and process_id
-				//	(void)GetWindowThreadProcessId(h_window, &process_id);
-
-				//	// using parent/child structure and callback function to get .exe
-				//	parent_child_info info = { 0 };
-				//	(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
-				//	info.child_process_id = info.parent_process_id;
-				//	(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
-
-				//	// allowing access and getting process handle
-				//	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
-
-				//	// getting path to process if h_process is not null
-				//	if (h_process != NULL) {
-				//		(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
-
-				//		// intializing tokens to retrieve .exe
-				//		wchar_t* curToken = 0;
-				//		wchar_t* tempToken = 0;
-
-				//		// getting first token
-				//		curToken = _tcstok(process_path, L"\\");
-
-				//		// iterating through all tokens
-				//		while (curToken != NULL) {
-
-				//			tempToken = _tcstok(NULL, L"\\");
-
-				//			// if current token is not null, assign to token as output
-				//			if (tempToken != NULL) {
-				//				curToken = tempToken;
-				//			}
-
-				//			// break if we are at end of file path
-				//			else {
-				//				break;
-				//			}
-				//		}
-
-				//		// checking if process is immersive
-				//		isImmersive = IsImmersiveProcess(h_process);
-				//		// checking if window is hung
-				//		isHung = IsHungAppWindow(h_window);
-
-				//		SET_INPUT_ULL_VALUE(
-				//			INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX,
-				//			h_window // 5439954, 1902670
-				//		);
-
-				//		SET_INPUT_UNICODE_STRING_ADDRESS(
-				//			INPUT_GET_FOREGROUND_WINDOW_EXE_INDEX,
-				//			curToken
-				//		);
-				//	}
-				//}
-
-
-
-
-				//thread_id = 0; // thread id
-				//process_id = 0; // process id
-				//h_process = NULL; // process handle
-
-				//// getting foreground window handle and setting isImmersive and isHung to default FALSE
-				//h_window = GetNextWindow(h_window, GW_HWNDNEXT);
-				//isImmersive = FALSE;
-				//isHung = FALSE;
-
-				//if (h_window != NULL) {
-
-				//	// getting thread id and process_id
-				//	(void)GetWindowThreadProcessId(h_window, &process_id);
-
-				//	// using parent/child structure and callback function to get .exe
-				//	parent_child_info info = { 0 };
-				//	(void)GetWindowThreadProcessId(h_window, &info.parent_process_id);
-				//	info.child_process_id = info.parent_process_id;
-				//	(void)EnumChildWindows(h_window, EnumChildWindowsCallback, (LPARAM)&info);
-
-				//	// allowing access and getting process handle
-				//	h_process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info.child_process_id);
-
-				//	// getting path to process if h_process is not null
-				//	if (h_process != NULL) {
-				//		(void)GetProcessImageFileName(h_process, process_path, MAX_PATH);
-
-				//		// intializing tokens to retrieve .exe
-				//		wchar_t* curToken = 0;
-				//		wchar_t* tempToken = 0;
-
-				//		// getting first token
-				//		curToken = _tcstok(process_path, L"\\");
-
-				//		// iterating through all tokens
-				//		while (curToken != NULL) {
-
-				//			tempToken = _tcstok(NULL, L"\\");
-
-				//			// if current token is not null, assign to token as output
-				//			if (tempToken != NULL) {
-				//				curToken = tempToken;
-				//			}
-
-				//			// break if we are at end of file path
-				//			else {
-				//				break;
-				//			}
-				//		}
-
-				//		// checking if process is immersive
-				//		isImmersive = IsImmersiveProcess(h_process);
-				//		// checking if window is hung
-				//		isHung = IsHungAppWindow(h_window);
-
-				//		SET_INPUT_ULL_VALUE(
-				//			INPUT_GET_NEXT_WINDOW_HANDLE_INDEX,
-				//			h_window
-				//		);
-
-				//		//prints(curToken.GetType());
-				//		//printf("\n");
-				//		//printf("%d", *curToken);
-				//		//printf("\n");
-				//		//printf("%s", "conhost.exe");
-
-
-				//		//if ((wchar_t *)curToken == (wchar_t*)"conhost.exe") {
-				//		//	break;
-				//		//}
-
-				//		SET_INPUT_UNICODE_STRING_ADDRESS(
-				//			INPUT_GET_NEXT_WINDOW_EXE_INDEX,
-				//			curToken
-				//		);
-				//	}
-				//}
-
+			
 				SET_INPUT_ULL_VALUE(
 					INPUT_999_INDEX,
 					999
@@ -874,7 +725,7 @@ generate_metrics_exit:
 
 }
 
-void map_foreground(PINTEL_MODELER_INPUT_TABLE p, HWND hWnd, int index) {
+void get_window_info(PINTEL_MODELER_INPUT_TABLE p, HWND hWnd, int index) {
 
 	thread_id = 0; // thread id
 	process_id = 0; // process id
@@ -921,19 +772,55 @@ void map_foreground(PINTEL_MODELER_INPUT_TABLE p, HWND hWnd, int index) {
 			}
 		}
 
-		// checking if process is immersive
-		BOOL isImmersive = IsImmersiveProcess(h_process);
+
 		// checking if window is hung
-		BOOL temp_isHung = IsHungAppWindow(hWnd);
+		isHung = IsHungAppWindow(hWnd);
+		// checking if process is immersive
+		isImmersive = IsImmersiveProcess(h_process);
 
 		SET_INPUT_ULL_VALUE(
-			index,
+			index * 8,
 			hWnd
 		);
 
 		SET_INPUT_UNICODE_STRING_ADDRESS(
-			index+2,
+			index * 8 + 1,
 			curToken
+		);
+
+		SET_INPUT_ULL_VALUE(
+			index * 8 + 2,
+			isHung
+		);
+
+		SET_INPUT_ULL_VALUE(
+			index * 8 + 3,
+			isImmersive
+		);
+	}
+	
+	// getting window rectangle information
+	GetWindowRect(hWnd, &window_rect);
+	if (&window_rect != NULL) {
+
+		SET_INPUT_ULL_VALUE(
+			index * 8 + 4,
+			window_rect.left
+		);
+
+		SET_INPUT_ULL_VALUE(
+			index * 8 + 5,
+			window_rect.top
+		);
+
+		SET_INPUT_ULL_VALUE(
+			index * 8 + 6,
+			window_rect.right
+		);
+
+		SET_INPUT_ULL_VALUE(
+			index * 8 + 7,
+			window_rect.bottom
 		);
 	}
 }

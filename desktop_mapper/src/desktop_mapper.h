@@ -36,24 +36,64 @@ extern "C" {
 //-----------------------------------------------------------------------------
 // Defines.
 //-----------------------------------------------------------------------------
-#define INPUTS_COUNT 5
-#define INPUT_GET_FOREGROUND_WINDOW_HANDLE_INDEX 0
-#define INPUT_GET_NEXT_WINDOW_HANDLE_INDEX 1
-#define INPUT_GET_FOREGROUND_WINDOW_EXE_INDEX 2
-#define INPUT_GET_NEXT_WINDOW_EXE_INDEX 3
-#define INPUT_999_INDEX 4
+#define INPUTS_COUNT 17
+
+#define INPUT_WINDOW_1_HANDLE_INDEX 0
+#define INPUT_WINDOW_1_EXE_INDEX 1
+#define INPUT_WINDOW_1_IS_HUNG 2
+#define INPUT_WINDOW_1_IS_IMMERSIVE 3
+#define INPUT_WINDOW_1_UPPER_LEFT_X_INDEX 4
+#define INPUT_WINDOW_1_UPPER_LEFT_Y_INDEX 5
+#define INPUT_WINDOW_1_BOTTOM_RIGHT_X_INDEX 6
+#define INPUT_WINDOW_1_BOTTOM_RIGHT_Y_INDEX 7
+
+#define INPUT_WINDOW_2_HANDLE_INDEX 8
+#define INPUT_WINDOW_2_EXE_INDEX 9
+#define INPUT_WINDOW_2_IS_HUNG 10
+#define INPUT_WINDOW_2_IS_IMMERSIVE 11
+#define INPUT_WINDOW_2_UPPER_LEFT_X_INDEX 12
+#define INPUT_WINDOW_2_UPPER_LEFT_Y_INDEX 13
+#define INPUT_WINDOW_2_BOTTOM_RIGHT_X_INDEX 14
+#define INPUT_WINDOW_2_BOTTOM_RIGHT_Y_INDEX 15
+
+#define INPUT_999_INDEX 16
+
 #define INPUT_NAME_STRING "DSKTP"
 #define INPUT_DESCRIPTION_STRINGS \
-	"GetForegroundWindow() HWND", \
-	"GetNextWindow() HWND", \
-	"GetForegroundWindow() .exe", \
-	"GetNextWindow() .exe", \
+	"Window 1 HWND.", \
+	"Window 1 .exe.", \
+	"Window 1 is hung.", \
+	"Window 1 is immersive.", \
+	"Window 1 upper left x coordinate.", \
+	"Window 1 upper left y coordinate.", \
+	"Window 1 bottom right x coordinate.", \
+	"Window 1 bottom right y coordinate.", \
+	"Window 1 HWND.", \
+	"Window 1 .exe.", \
+	"Window 1 is hung.", \
+	"Window 1 is immersive.", \
+	"Window 1 upper left x coordinate.", \
+	"Window 1 upper left y coordinate.", \
+	"Window 1 bottom right x coordinate.", \
+	"Window 1 bottom right y coordinate.", \
 	"999"
 #define INPUT_TYPES \
 	ULL_COUNTER, \
+	STRING_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
 	ULL_COUNTER, \
 	STRING_COUNTER, \
-	STRING_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
+	ULL_COUNTER, \
 	ULL_COUNTER
 
 //-----------------------------------------------------------------------------
@@ -91,7 +131,7 @@ unsigned int __stdcall generate_metrics(void *);
 unsigned int __stdcall mouse_messages_loop(void *);
 LRESULT CALLBACK process_mouse_messages(int, WPARAM, LPARAM);
 
-void map_foreground(PINTEL_MODELER_INPUT_TABLE, HWND, int);
+void get_window_info(PINTEL_MODELER_INPUT_TABLE, HWND, int);
 /*--------------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
