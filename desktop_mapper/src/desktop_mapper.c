@@ -23,6 +23,7 @@
 // Headers inclusions.
 //-----------------------------------------------------------------------------
 //#define _MEMORY_DEBUG 1
+//#define __PL_WINDOWS__
 
 #if defined (_DEBUG) || defined (__PL_DEBUG__)
 	#define _CRTDBG_MAP_ALLOC
@@ -66,9 +67,18 @@ RECT window_rect = { 0 }; // windows rect object
 // Data structures.
 //-------------------------------------------------------------------------
 typedef struct _windows_structure {
-	unsigned n_windows;
-	HWND windows[100];
-	LONG top_corners[100];
+	HWND h_window;
+	DWORD process_id; // not logged
+	HANDLE h_process; // not logged
+	TCHAR process_path[MAX_PATH]; // not logged
+	wchar_t* curToken;
+	wchar_t* prevToken; // not logged
+	BOOL isHung;
+	BOOL isImmersive;
+	int upper_left_x;
+	int upper_left_y;
+	int bottom_right_x;
+	int bottom_right_y;
 } WINDOWS_STRUCTURE, * PWINDOWS_STRUCTURE;
 
 typedef struct _samples_structure {
@@ -126,16 +136,35 @@ ESRV_API ESRV_STATUS modeler_init_inputs(
 	SIGNAL_EVENT_DRIVEN_MODE;
 	//SIGNAL_PURE_EVENT_DRIVEN_MODE;
 	//SIGNAL_MULTIPLEXED_LOG_MODE;
+	
+		// LOGIC
+		// take time stamp of data, 
+		// put into input,
+		// set value of input,
+		// for private data set Z value,
+		// log this input
+		// REPEAT FOR NEXT WINDOW
+		// however, set private data to "1" using Multplex Logger Thread
+		// SIGNAL_MULTIPLEX_LOG_MOD in modeler_init
+
+		// INPUTTING VAUES
+		// done in generate_metrics()
+		// first check if logger is capable of handling Multiplex logging
+		// lret = LOG_INPUT_VALUES --> to check if Multiplex logging is available
+		// switch(lret)
+			// case MULTIPLEX_LOG_OK
+
+		// LOGGING VALUES
+		// log after each interation during the Z axis
+
+		// OTHER
+		// keep in mind UNMASKED_ALL_WINDOW_INPUTS (similar to SET_INPUT_AS_LOGGED)
+		// and MASKED_ALL_WINDOW_INPUTS (similar to SET_INPUT_AS_NOT_LOGGED)
+		
+
 	SET_INPUTS_COUNT(INPUTS_COUNT);
 
-	////-------------------------------------------------------------------------
-	//// Initializing structures.
-	////-------------------------------------------------------------------------
-	//samples_struct.windows_entry = (PWINDOWS_STRUCTURE)malloc(sizeof(WINDOWS_STRUCTURE));
-	//assert(samples_struct.windows_entry != NULL);
-	//INPUT_DIAGNOSTIC_MALLOC(samples_struct.windows_entry, sizeof(WINDOWS_STRUCTURE));
-	//memset(samples_struct.windows_entry, 0, sizeof(WINDOWS_STRUCTURE));
-	//samples_struct.entry_count = 1;
+
 
 
 	return(ESRV_SUCCESS);
@@ -197,12 +226,28 @@ ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 		SET_INPUT_AS_NOT_LOGGED(i);
 	} // for i (each input)
 
+	//-------------------------------------------------------------------------
+	// Initializing structures.
+	//-------------------------------------------------------------------------
+	samples_struct.windows_entry = (PWINDOWS_STRUCTURE)malloc(sizeof(WINDOWS_STRUCTURE) * 16); // keeping track of a maximum of 16 windows
+	if (samples_struct.windows_entry == NULL) {
+		goto modeler_open_inputs_error;
+	}
+	INPUT_DIAGNOSTIC_MALLOC(samples_struct.windows_entry, sizeof(WINDOWS_STRUCTURE));
+	memset(samples_struct.windows_entry, 0, sizeof(WINDOWS_STRUCTURE));
+	samples_struct.entry_count = 1;
+
+
 	return(ESRV_SUCCESS);
 
 	//-------------------------------------------------------------------------
 	// Exception handling section end.
 	//-------------------------------------------------------------------------
 	INPUT_END_EXCEPTIONS_HANDLING(p)
+
+modeler_open_inputs_error:
+
+	return(ESRV_FAILURE);
 
 }
 
@@ -241,15 +286,15 @@ ESRV_API ESRV_STATUS modeler_close_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 		h_mouse_hook = NULL;
 	}
 
-	////-------------------------------------------------------------------------
-	//// Free dynamic memory of data structures.
-	////-------------------------------------------------------------------------
-	//if (samples_struct.windows_entry != NULL) {
-	//	INPUT_DIAGNOSTIC_FREE(samples_struct.windows_entry);
-	//	free(samples_struct.windows_entry);
-	//	samples_struct.windows_entry = NULL;
-	//	samples_struct.entry_count = 0;
-	//}
+	//-------------------------------------------------------------------------
+	// Free dynamic memory of data structures.
+	//-------------------------------------------------------------------------
+	if (samples_struct.windows_entry != NULL) {
+		INPUT_DIAGNOSTIC_FREE(samples_struct.windows_entry);
+		free(samples_struct.windows_entry);
+		samples_struct.windows_entry = NULL;
+		samples_struct.entry_count = 0;
+	}
 
 	return(ESRV_SUCCESS);
 
@@ -664,22 +709,13 @@ unsigned int __stdcall generate_metrics(void *pv) {
 				break;
 			case CLICK_EVENT_INDEX:
 
-				//h_window = GetForegroundWindow();
-				/*h_window_2 = GetNextWindow(h_window, GW_HWNDNEXT);*/
-
-				//GetWindowRect(
-				//	h_window,
-				//	window_rect
-				//);
-
-
-				// sets inputs for input index 0 and 2
+				// sets inputs for window 1
 				h_window = GetForegroundWindow();
 				if (h_window != NULL) {
 					get_window_info(p, h_window, 0);
 				}
 
-				// sets inputs for input index 1 and 3
+				// sets inputs for window 2
 				h_window = GetNextWindow(h_window, GW_HWNDNEXT);
 				if (h_window != NULL) {
 					get_window_info(p, h_window, 1);
@@ -713,6 +749,8 @@ unsigned int __stdcall generate_metrics(void *pv) {
 		INPUT_DIAGNOSTIC_HIGHLIGHTED("Click!");
 
 	} // while need to run
+
+	// SET_INPUT_PRIVATE_DWORD(index, value) per window
 
 generate_metrics_exit:
 

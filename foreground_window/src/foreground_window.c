@@ -118,7 +118,7 @@ Return  : status.
 -----------------------------------------------------------------------------*/
 ESRV_API ESRV_STATUS modeler_open_inputs(PINTEL_MODELER_INPUT_TABLE p) {
 
-	// REGISTER DCTL
+	// REGISTER DCTL HERE
 
 	//-------------------------------------------------------------------------
 	// Generic variables.
@@ -672,6 +672,9 @@ unsigned int __stdcall generate_metrics(void *pv) {
 							INPUT_INDEX_IS_HUNG,
 							isImmersive
 						);
+						
+
+						// emit DCTL here when change of .exe is detected
 
 						// setting previous token value equal to current token value
 						prevToken = curToken;
