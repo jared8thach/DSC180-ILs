@@ -102,47 +102,72 @@ class first_order_HMM(object):
     
         return self.posteriors
     
-    def predict(self, X):
+    def predict(self, X, n_foregrounds=1):
         """
         inputs :
             X : a list of prior foreground applications
+            n_foregrounds : number of predicted foregrounds to return (default: 1)
             
         outputs :
             y : a list of predicted subsequent foreground applications 
         """
+        
         # outputting foreground application with maximum conditional probability
-        y = np.array([])
+        y = []
         for x in X:
             # outputting foreground application with maximum conditional probability
-            y = np.append(y, self.posteriors.loc[x,:].idxmax())
+            # y = np.append(y, self.posteriors.loc[x,:].idxmax())
+            y.append(list(self.posteriors.loc[x,:].sort_values(ascending=False)[:n_foregrounds].index))
             
-        return pd.Series(y)
+        return y
+    
+    def accuracy(self, y_test, y_pred):
+        """
+        inputs :
+            y_test : a list of true subsequent foreground applications
+            y_pred : a list of predicted subsequent foreground applications
+            
+        outputs :
+            accuracy : accuracy of trained model on y_test
+        """
+        correct = 0
+        for i, y in enumerate(y_test):
+            if y in y_pred[i]:
+                correct += 1
+        accuracy = correct / len(y_test)
+        
+        return accuracy
 
 if __name__ == "__main__":
 
+    print('Importing data...')
     # getting LAPTOP-MP2GILK8 dataset
     string_df_0, ull_df_0 = get_all_databases('group3_collected_data')
     
     # # Getting DESKTOP-E83M0TM dataset
     # string_df_1, ull_df_1 = get_all_databases('group3_collected_data_pc_1')
 
+    print('Cleaning data...')
     # cleaning string_df_0
     df = clean(string_df_0)
 
+    print('Splitting data...')
     # splitting data into 80% training and 20% testing sets
     X_train, X_test, y_train, y_test = train_test_split(df['X'], df['y'], test_size=0.2, random_state=99)
 
     # initializing first order HMM
     model = first_order_HMM()
 
+    print('Training model...')
     # training model
     model.fit(X_train, y_train)
 
     # computing test accuracy
-    y_pred = model.predict(X_test)
-    accuracy = sum(np.array(y_pred) == np.array(y_test)) / len(y_test)
-    print('Test accuracy: {:.8f}'.format(accuracy))
+    y_pred = model.predict(X_test, n_foregrounds=3)
+    accuracy = model.accuracy(y_test, y_pred)
+    print('Test accuracy: ', accuracy)
+    print()
 
     # saving predictions to .txt file
-    df = pd.DataFrame({'X': X_test.reset_index(drop=True), 'y_pred': y_pred.reset_index(drop=True)})
+    df = pd.DataFrame({'X': X_test, 'y_pred': y_pred})
     df.to_csv(r'.\output.txt', header=True, index=None, sep=',', mode='w')
