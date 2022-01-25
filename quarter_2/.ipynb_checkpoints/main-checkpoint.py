@@ -10,28 +10,41 @@ from sklearn.model_selection import train_test_split
 
 # helper function to join tables across different database (.db) files
 def join_tables(tables):
+    
     df = tables[0]
     for table in tables[1:]:
         df = pd.concat([df, table])
+        
     return df.reset_index(drop=True)
-
 
 # joining all database (.db) files of folder
 def get_all_databases(folder):
+    
     string_tables = []
     ull_tables = []
     files = os.listdir(folder)
+    
     # iterating through all files of folder to append tables
     for file in files:
         path = os.path.join(folder, file)
         con = sqlite3.connect(path)
-        string_tables.append(pd.read_sql_query('SELECT * FROM COUNTERS_STRING_TIME_DATA', con))
-        ull_tables.append(pd.read_sql_query('SELECT * FROM COUNTERS_ULL_TIME_DATA', con))
+        if path == 'group3_collected_data_pc_1\group3_collected_data_pc_1-000006.db':
+            string_table = pd.read_sql_query('SELECT * FROM COUNTERS_STRING_TIME_DATA', con)
+            string_table['ID_INPUT'] = string_table['ID_INPUT'].replace({2: 3, 3: 4, 4: 5, 5: 2})
+            ull_table = pd.read_sql_query('SELECT * FROM COUNTERS_ULL_TIME_DATA', con)
+            ull_table['ID_INPUT'] = ull_table['ID_INPUT'].replace({2: 3, 3: 4, 4: 5, 5: 2})
+            string_tables.append(string_table)
+            ull_tables.append(ull_table)
+        else:
+            string_tables.append(pd.read_sql_query('SELECT * FROM COUNTERS_STRING_TIME_DATA', con))
+            ull_tables.append(pd.read_sql_query('SELECT * FROM COUNTERS_ULL_TIME_DATA', con))
+        
     # concatenating tables into single DataFrames
     string_df = join_tables(string_tables)
     string_df.loc[:, 'VALUE'] = string_df.loc[:, 'VALUE'].replace({'WWAHost.exe': 'Netflix.exe'}) 
     string_df.loc[:, 'VALUE'] = string_df.loc[:, 'VALUE'].str.lower()
     ull_df = join_tables(ull_tables)
+    
     return (string_df, ull_df)
 
 
