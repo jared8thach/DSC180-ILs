@@ -36,13 +36,21 @@ def get_all_databases(folder):
 
 
 # function to clean string DataFrames
-def clean(df):
+def clean(df, condition_1=True):
+    
     sequence = df[df['ID_INPUT'] == 3]['VALUE'].values
     pairs = []
+    
     for i in range(len(sequence)-1):
-        pairs.append([sequence[i], sequence[i+1]])
+        if condition_1 == True:
+            if sequence[i] == sequence[i+1]:
+                continue
+            else:
+                pairs.append([sequence[i], sequence[i+1]])
+        else:
+            pairs.append([sequence[i], sequence[i+1]])
+        
     return pd.DataFrame(pairs, columns=['X', 'y'])
-
 
 # model class for first order Hidden Markov Model
 class first_order_HMM(object):
@@ -99,8 +107,6 @@ class first_order_HMM(object):
         self.counts = get_counts()
         self.priors = get_priors()
         self.posteriors = get_posteriors()
-    
-        return self.posteriors
     
     def predict(self, X, n_foregrounds=1):
         """
