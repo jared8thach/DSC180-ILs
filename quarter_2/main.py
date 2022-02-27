@@ -28,24 +28,21 @@ def get_all_databases(folder):
     for file in files:
         path = os.path.join(folder, file)
         con = sqlite3.connect(path)
-        if path == 'group3_collected_data_pc_1\group3_collected_data_pc_1-000006.db':
-            string_table = pd.read_sql_query('SELECT * FROM COUNTERS_STRING_TIME_DATA', con)
-            string_table['ID_INPUT'] = string_table['ID_INPUT'].replace({2: 3, 3: 4, 4: 5, 5: 2})
-            ull_table = pd.read_sql_query('SELECT * FROM COUNTERS_ULL_TIME_DATA', con)
-            ull_table['ID_INPUT'] = ull_table['ID_INPUT'].replace({2: 3, 3: 4, 4: 5, 5: 2})
-            string_tables.append(string_table)
-            ull_tables.append(ull_table)
-        else:
-            string_tables.append(pd.read_sql_query('SELECT * FROM COUNTERS_STRING_TIME_DATA', con))
-            ull_tables.append(pd.read_sql_query('SELECT * FROM COUNTERS_ULL_TIME_DATA', con))
+        string_tables.append(pd.read_sql_query('SELECT COUNTERS_STRING_TIME_DATA.*, INPUTS.INPUT_DESCRIPTION FROM COUNTERS_STRING_TIME_DATA LEFT JOIN INPUTS WHERE COUNTERS_STRING_TIME_DATA.ID_INPUT == INPUTS.ID_INPUT', con))
+        ull_tables.append(pd.read_sql_query('SELECT COUNTERS_ULL_TIME_DATA.*, INPUTS.INPUT_DESCRIPTION FROM COUNTERS_ULL_TIME_DATA LEFT JOIN INPUTS WHERE COUNTERS_ULL_TIME_DATA.ID_INPUT == INPUTS.ID_INPUT', con))
         
     # concatenating tables into single DataFrames
     string_df = join_tables(string_tables)
     string_df.loc[:, 'VALUE'] = string_df.loc[:, 'VALUE'].replace({'WWAHost.exe': 'Netflix.exe'}) 
     string_df.loc[:, 'VALUE'] = string_df.loc[:, 'VALUE'].str.lower()
+    string_df.loc[string_df['INPUT_DESCRIPTION'] == 'Mouse cursor icon state.', 'ID_INPUT'] = 2
+    string_df.loc[string_df['INPUT_DESCRIPTION'] == 'Foreground window .exe process.', 'ID_INPUT'] = 3
     ull_df = join_tables(ull_tables)
-    
-    return (string_df, ull_df)
+    ull_df.loc[ull_df['INPUT_DESCRIPTION'] == 'Mouse X position in pixel(s)', 'ID_INPUT'] = 0
+    ull_df.loc[ull_df['INPUT_DESCRIPTION'] == 'Mouse Y position in pixel(s)', 'ID_INPUT'] = 1
+    ull_df.loc[ull_df['INPUT_DESCRIPTION'] == 'Foreground window is immersive.', 'ID_INPUT'] = 4
+    ull_df.loc[ull_df['INPUT_DESCRIPTION'] == 'Foreground window is hung.', 'ID_INPUT'] = 5
+    return (string_df.drop('INPUT_DESCRIPTION', axis=1), ull_df.drop('INPUT_DESCRIPTION', axis=1))
 
 
 # function to clean string DataFrames
